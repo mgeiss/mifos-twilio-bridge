@@ -4,14 +4,7 @@
 *.iml
 *.iws
 
-# Maven
+# bin folder
 log/
 target/
 build/
-
-# Derby
-axon-sample.db
-derby.log
-
-# Axon
-events/
