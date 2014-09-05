@@ -29,6 +29,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
 import retrofit.RestAdapter;
+import retrofit.RetrofitError;
 
 @Component
 public class CreateClientEventListener implements ApplicationListener<CreateClientEvent> {
@@ -64,20 +65,27 @@ public class CreateClientEventListener implements ApplicationListener<CreateClie
 
         final RestAdapter restAdapter = this.restAdapterProvider.get();
 
-        final MifosClientService clientService = restAdapter.create(MifosClientService.class);
+        try {
+            final MifosClientService clientService = restAdapter.create(MifosClientService.class);
 
-        final Client client = clientService.findClient(this.authToken, this.tenant, clientId);
-        final String mobileNo = client.getMobileNo();
-        if (mobileNo != null) {
-            logger.info("Mobile number found, sending message!");
+            final Client client = clientService.findClient(this.authToken, this.tenant, clientId);
+            final String mobileNo = client.getMobileNo();
+            if (mobileNo != null) {
+                logger.info("Mobile number found, sending message!");
 
-            final String message = new StringBuilder("Hello ")
-                    .append(client.getDisplayName())
-                    .append(", welcome at Mifos!")
-                    .toString();
+                final String message = new StringBuilder("Hello ")
+                        .append(client.getDisplayName())
+                        .append(", welcome at Mifos!")
+                        .toString();
 
-            this.twilioRestClientProvider.sendMessage(mobileNo, message);
+                this.twilioRestClientProvider.sendMessage(mobileNo, message);
+            }
+            logger.info("Create client event processed!");
+        } catch (RetrofitError rer) {
+            if (rer.getResponse().getStatus() == 404) {
+                logger.info("Client not found!");
+            }
         }
-        logger.info("Create client event processed!");
+
     }
 }
