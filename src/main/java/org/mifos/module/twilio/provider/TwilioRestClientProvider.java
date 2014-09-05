@@ -64,6 +64,7 @@ public class TwilioRestClientProvider {
         final MessageFactory messageFactory = account.getMessageFactory();
 
         try {
+            logger.info("Sending SMS to " + mobileNo + " ...");
             messageFactory.create(messageParams);
             return true;
         } catch (TwilioRestException trex) {
