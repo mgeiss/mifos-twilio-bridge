@@ -1,0 +1,17 @@
+# Intellij
+.idea/
+.gradle/
+*.iml
+*.iws
+
+# Maven
+log/
+target/
+build/
+
+# Derby
+axon-sample.db
+derby.log
+
+# Axon
+events/
