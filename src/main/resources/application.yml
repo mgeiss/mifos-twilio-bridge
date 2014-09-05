@@ -13,6 +13,6 @@ mifos:
   tenant: default
   authtoken: Basic bWlmb3M6cGFzc3dvcmQ=
   twilio:
-    accountid: ACd957413464d859702ee40af41b234244
-    authtoken: 7b7edaf91506694f955aba5255213e2e
-    phoneno: +12674607279
+    accountid: <your twilio account>
+    authtoken: <your twilio auth token>
+    phoneno: <your mobile no>
