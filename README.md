@@ -9,6 +9,30 @@ events send by the Mifos X Platform.
 Needed additional information is requested via the Mifos X Platform and
 a SMS message is created and send using Twilio.
 
+Execution
+---------
+Simply use the gradle task bootRun or build the project and run the
+executable jar file by calling:
+
+    java -jar mifos-twilio-bridge-0.0.1.jar
+
+Limitation
+----------
+Only a create client event will be processed. For this you need to specify
+two header params:
+    
+    X-Mifos-Entity: client
+    X-Mifos-Action: create
+
+The Body of the request should look similar to something like this:
+
+    {
+        "officeId": 1,
+        "clientId": 1745,
+        "resourceId": 1,
+        "savingsId": 10
+    }
+
 People
 ------
 Markus Geiss (markus.geiss@live.de).
