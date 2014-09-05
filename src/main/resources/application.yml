@@ -1,0 +1,18 @@
+# server configuration
+server:
+  port: 9191
+
+# endpoint configuration
+endpoints:
+  shutdown:
+    enabled: true
+
+# app related configuration
+mifos:
+  endpoint: https://demo.openmf.org/mifosng-provider/api/v1/
+  tenant: default
+  authtoken: Basic bWlmb3M6cGFzc3dvcmQ=
+  twilio:
+    accountid: ACd957413464d859702ee40af41b234244
+    authtoken: 7b7edaf91506694f955aba5255213e2e
+    phoneno: +12674607279
