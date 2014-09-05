@@ -13,7 +13,8 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
         "org.mifos.module.twilio.controller",
         "org.mifos.module.twilio.service",
         "org.mifos.module.twilio.provider",
-        "org.mifos.module.twilio.listener"})
+        "org.mifos.module.twilio.listener",
+        "org.mifos.module.twilio.parser"})
 public class TwilioBridgeTestConfiguration {
 
     public TwilioBridgeTestConfiguration() {
