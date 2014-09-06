@@ -15,6 +15,8 @@
  */
 package org.mifos.module.twilio.listener;
 
+import org.apache.velocity.VelocityContext;
+import org.apache.velocity.app.Velocity;
 import org.mifos.module.twilio.domain.Client;
 import org.mifos.module.twilio.domain.CreateClientResponse;
 import org.mifos.module.twilio.event.CreateClientEvent;
@@ -31,6 +33,8 @@ import org.springframework.stereotype.Component;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 
+import java.io.StringWriter;
+
 @Component
 public class CreateClientEventListener implements ApplicationListener<CreateClientEvent> {
 
@@ -39,6 +43,9 @@ public class CreateClientEventListener implements ApplicationListener<CreateClie
 
     @Value("${mifos.tenant}")
     private String tenant;
+
+    @Value("${message.template.createclient}")
+    private String messageTemplate;
 
     private static final Logger logger = LoggerFactory.getLogger(CreateClientEventListener.class);
 
@@ -73,12 +80,13 @@ public class CreateClientEventListener implements ApplicationListener<CreateClie
             if (mobileNo != null) {
                 logger.info("Mobile number found, sending message!");
 
-                final String message = new StringBuilder("Hello ")
-                        .append(client.getDisplayName())
-                        .append(", welcome at Mifos!")
-                        .toString();
+                final VelocityContext velocityContext = new VelocityContext();
+                velocityContext.put("name", client.getDisplayName());
 
-                this.twilioRestClientProvider.sendMessage(mobileNo, message);
+                final StringWriter stringWriter = new StringWriter();
+                Velocity.evaluate(velocityContext, stringWriter, "CreateClientMessage", this.messageTemplate);
+
+                this.twilioRestClientProvider.sendMessage(mobileNo, stringWriter.toString());
             }
             logger.info("Create client event processed!");
         } catch (RetrofitError rer) {

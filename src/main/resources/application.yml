@@ -16,3 +16,8 @@ mifos:
     accountid: <your twilio account>
     authtoken: <your twilio auth token>
     phoneno: <your mobile no>
+
+# message templates
+message:
+  template:
+    createclient: Hello $name, welcome at Mifos X!
