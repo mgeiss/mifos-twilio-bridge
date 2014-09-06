@@ -13,19 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mifos.module.twilio.configuration;
+package org.mifos.module.twilio.domain;
 
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.web.SpringBootServletInitializer;
+public class SendSMSResponse {
 
-public class TwilioBridgeInitializer extends SpringBootServletInitializer {
+    private String mobileNo;
+    private String message;
 
-    public TwilioBridgeInitializer() {
+    public SendSMSResponse() {
         super();
     }
 
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(TwilioBridgeConfiguration.class);
+    public String getMobileNo() {
+        return mobileNo;
+    }
+
+    public void setMobileNo(String mobileNo) {
+        this.mobileNo = mobileNo;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

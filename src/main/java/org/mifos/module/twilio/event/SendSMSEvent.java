@@ -13,19 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mifos.module.twilio.configuration;
+package org.mifos.module.twilio.event;
 
-import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.boot.context.web.SpringBootServletInitializer;
-
-public class TwilioBridgeInitializer extends SpringBootServletInitializer {
-
-    public TwilioBridgeInitializer() {
-        super();
-    }
-
-    @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(TwilioBridgeConfiguration.class);
+public class SendSMSEvent extends AbstractEvent {
+    public SendSMSEvent(Object source, String payload) {
+        super(source, payload);
     }
 }

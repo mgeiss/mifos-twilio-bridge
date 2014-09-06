@@ -17,7 +17,8 @@ package org.mifos.module.twilio.event;
 
 public enum EventType {
 
-    CREATE_CLIENT("client", "create");
+    CREATE_CLIENT("client", "create"),
+    SEND_SMS("sms", "send");
 
     private String entity;
     private String action;
