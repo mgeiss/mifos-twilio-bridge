@@ -12,20 +12,12 @@ buildscript {
 apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'spring-boot'
-apply plugin: 'war'
 
-configurations {
-    providedRuntime
-}
-
-jar {
-    baseName = 'mifos-twilio-bridge'
-    version = '0.0.1'
-}
-
-war {
-    baseName = 'mifos-twilio-bridge'
-    version = '0.0.1'
+if (project.hasProperty('profile')
+        && project.getProperty('profile') == 'deployable') {
+    apply from: 'profile-deployable.gradle'
+} else {
+    apply from: 'profile-standalone.gradle'
 }
 
 repositories {
@@ -36,7 +28,6 @@ repositories {
 
 dependencies {
     compile("org.springframework.boot:spring-boot-starter-web")
-    providedRuntime("org.springframework.boot:spring-boot-starter-tomcat")
     compile("org.springframework.boot:spring-boot-starter-actuator")
     compile('com.squareup.retrofit:retrofit:1.6.1')
     compile('com.twilio.sdk:twilio-java-sdk:3.4.6')
