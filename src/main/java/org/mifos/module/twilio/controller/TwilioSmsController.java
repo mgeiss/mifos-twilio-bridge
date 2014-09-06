@@ -15,26 +15,40 @@
  */
 package org.mifos.module.twilio.controller;
 
+import org.mifos.module.twilio.exception.InvalidApiKeyException;
+import org.mifos.module.twilio.service.SecurityService;
 import org.mifos.module.twilio.service.TwilioBridgeService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/twilio")
 public class TwilioSmsController {
 
+    private final SecurityService securityService;
     private final TwilioBridgeService twilioBridgeService;
 
     @Autowired
-    public TwilioSmsController(final TwilioBridgeService twilioBridgeService) {
+    public TwilioSmsController(final SecurityService securityService,
+                               final TwilioBridgeService twilioBridgeService) {
         super();
+        this.securityService = securityService;
         this.twilioBridgeService = twilioBridgeService;
     }
 
     @RequestMapping(value = "/sms", method = RequestMethod.POST, consumes = {"application/json"}, produces = {"application/json"})
-    public void sendShortMessage(@RequestHeader("X-Mifos-Entity") final String entity,
+    public void sendShortMessage(@RequestHeader("X-Mifos-API-Key") final String apiKey,
+                                 @RequestHeader("X-Mifos-Entity") final String entity,
                                  @RequestHeader("X-Mifos-Action") final String action,
                                  @RequestBody final String payload) {
+        this.securityService.verifyApiKey(apiKey);
         this.twilioBridgeService.sendShortMessage(entity, action, payload);
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public void handleInvalidApiKeyException(final InvalidApiKeyException iakex) {
+
     }
 }
