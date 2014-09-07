@@ -17,7 +17,7 @@ executable jar file by calling:
 
 ### Resources ###
 
-<table style='border:0'>
+<table>
     <tr>
         <th>Path</th>
         <th>Type</th>
@@ -29,7 +29,7 @@ executable jar file by calling:
     <tr>
         <td>/twilio/sms</td>
         <td>POST</td>
-        <td>X-Mifos-API-Key: &lt;your api key&gt;<br>X-Mifos-Entity: &lt;an entity&gt;<br>X-Mifos-Action: &lt;an action&gt;</td>
+        <td>X-Mifos-API-Key<br>X-Mifos-Entity<br>X-Mifos-Action</td>
         <td>none</td>
         <td>Stringified JSON</td>
         <td>200<br>401</td>
@@ -38,7 +38,7 @@ executable jar file by calling:
 
 ### Available Entities and Actions ###
 
-<table style='border:0'>
+<table>
     <tr>
         <th>Entity</th>
         <th>Action</th>
