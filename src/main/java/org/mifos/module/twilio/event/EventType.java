@@ -18,6 +18,7 @@ package org.mifos.module.twilio.event;
 public enum EventType {
 
     CREATE_CLIENT("client", "create"),
+    LOAN_REPAYMENT("loan", "repayment"),
     SEND_SMS("sms", "send");
 
     private String entity;
@@ -30,7 +31,8 @@ public enum EventType {
 
     public static EventType get(final String entity, final String action) {
         for (final EventType et : values()) {
-            if (et.entity.equals(entity) && et.action.equals(action)) {
+            if (et.entity.equalsIgnoreCase(entity)
+                    && et.action.equalsIgnoreCase(action)) {
                 return et;
             }
         }

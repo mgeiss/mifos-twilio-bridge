@@ -2,6 +2,7 @@ package org.mifos.module.twilio.service;
 
 import org.mifos.module.twilio.event.CreateClientEvent;
 import org.mifos.module.twilio.event.EventType;
+import org.mifos.module.twilio.event.LoanRepaymentEvent;
 import org.mifos.module.twilio.event.SendSMSEvent;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -24,8 +25,12 @@ public class TwilioBridgeService implements ApplicationEventPublisherAware {
             case CREATE_CLIENT:
                 this.eventPublisher.publishEvent(new CreateClientEvent(this, payload));
                 break;
+            case LOAN_REPAYMENT:
+                this.eventPublisher.publishEvent(new LoanRepaymentEvent(this, payload));
+                break;
             case SEND_SMS:
                 this.eventPublisher.publishEvent(new SendSMSEvent(this, payload));
+                break;
         }
     }
 

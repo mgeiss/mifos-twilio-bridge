@@ -21,3 +21,4 @@ mifos:
 message:
   template:
     createclient: Hello $name, welcome at Mifos X!
+    loanrepayment: Hello $name, repayment for $account received!
