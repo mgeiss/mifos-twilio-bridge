@@ -1,44 +1,70 @@
-mifos-twilio-bridge
-===================
+# mifos-twilio-bridge #
 
-Summary
--------
+## Summary ##
 mifos-twilio-bridge provides a RESTful interface to send SMS based on
 events send by the Mifos X Platform.
 
 Needed additional information is requested via the Mifos X Platform and
 a SMS message is created and send using Twilio.
 
-Execution
----------
+## Execution ##
 Simply use the gradle task bootRun or build the project and run the
 executable jar file by calling:
 
     java -jar mifos-twilio-bridge-0.0.1.jar
 
-Limitation
-----------
-Only a create client event will be processed. For this you need to specify
-two header params:
-    
-    X-Mifos-Entity: client
-    X-Mifos-Action: create
+## API Documentation ##
 
-The Body of the request should look similar to something like this:
+### Resources ###
 
-    {
-        "officeId": 1,
-        "clientId": 1745,
-        "resourceId": 1,
-        "savingsId": 10
-    }
+<table style='border:0'>
+    <tr>
+        <th>Path</th>
+        <th>Type</th>
+        <th>Header</th>
+        <th>Parameter</th>
+        <th>Body</th>
+        <th>Result</th>
+    </tr>
+    <tr>
+        <td>/twilio/sms</td>
+        <td>POST</td>
+        <td>X-Mifos-API-Key: &lt;your api key&gt;<br>X-Mifos-Entity: &lt;an entity&gt;<br>X-Mifos-Action: &lt;an action&gt;</td>
+        <td>none</td>
+        <td>Stringified JSON</td>
+        <td>200<br>401</td>
+    </tr>
+</table>
 
-People
-------
+### Available Entities and Actions ###
+
+<table style='border:0'>
+    <tr>
+        <th>Entity</th>
+        <th>Action</th>
+        <th>Body</th>
+    </tr>
+    <tr>
+        <td>client</td>
+        <td>create</td>
+        <td>{"officeId":1,"clientId":1,"savingsId":1,"resourceId":1}</td>
+    </tr>
+    <tr>
+        <td>loan</td>
+        <td>repayment</td>
+        <td>{"officeId":1,"clientId":1,"loanId":1,"resourceId":1}</td>
+    </tr>
+    <tr>
+        <td>sms</td>
+        <td>send</td>
+        <td>{"mobileNo":"1234567890","message":"Custom message"}</td>
+    </tr>
+</table>
+
+## People ##
 Markus Geiss (markus.geiss@live.de).
 
-License
--------
+## License ##
 Copyright 2014 Markus Geiss
 
 Licensed under the Apache License, Version 2.0 (the "License");
