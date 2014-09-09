@@ -32,7 +32,7 @@ executable jar file by calling:
         <td>X-Mifos-API-Key<br>X-Mifos-Entity<br>X-Mifos-Action</td>
         <td>none</td>
         <td>Stringified JSON</td>
-        <td>200<br>401</td>
+        <td>200<br>401<br>404</td>
     </tr>
 </table>
 
