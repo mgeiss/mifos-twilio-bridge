@@ -16,6 +16,7 @@
 package org.mifos.module.twilio.controller;
 
 import org.mifos.module.twilio.exception.InvalidApiKeyException;
+import org.mifos.module.twilio.exception.UnknownEventTypeException;
 import org.mifos.module.twilio.service.SecurityService;
 import org.mifos.module.twilio.service.TwilioBridgeService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +49,13 @@ public class TwilioSmsController {
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
-    public void handleInvalidApiKeyException(final InvalidApiKeyException iakex) {
+    public void handleInvalidApiKeyException(final InvalidApiKeyException ex) {
 
+    }
+
+    @ExceptionHandler
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public String handleUnknownEventException(final UnknownEventTypeException ex) {
+        return ex.getMessage();
     }
 }

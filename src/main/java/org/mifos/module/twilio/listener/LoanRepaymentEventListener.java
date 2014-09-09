@@ -74,11 +74,11 @@ public class LoanRepaymentEventListener implements ApplicationListener<LoanRepay
 
         final RestAdapter restAdapter = this.restAdapterProvider.get();
         try {
-            final MifosClientService clientService = restAdapter.create(MifosClientService.class);
-            final Client client = clientService.findClient(this.authToken, this.tenant, clientId);
-
             final MifosLoanService loanService = restAdapter.create(MifosLoanService.class);
             final Loan loan = loanService.findLoan(this.authToken, this.tenant, loanId);
+
+            final MifosClientService clientService = restAdapter.create(MifosClientService.class);
+            final Client client = clientService.findClient(this.authToken, this.tenant, clientId);
 
             final String mobileNo = client.getMobileNo();
             if (mobileNo != null) {

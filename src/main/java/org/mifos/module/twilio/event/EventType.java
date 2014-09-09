@@ -15,6 +15,8 @@
  */
 package org.mifos.module.twilio.event;
 
+import org.mifos.module.twilio.exception.UnknownEventTypeException;
+
 public enum EventType {
 
     CREATE_CLIENT("client", "create"),
@@ -37,6 +39,6 @@ public enum EventType {
             }
         }
 
-        throw new IllegalArgumentException("Unknown event type!");
+        throw new UnknownEventTypeException(entity, action);
     }
 }
