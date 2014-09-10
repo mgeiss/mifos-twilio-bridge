@@ -15,9 +15,11 @@
  */
 package org.mifos.module.twilio.provider;
 
+import com.squareup.okhttp.OkHttpClient;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import retrofit.RestAdapter;
+import retrofit.client.OkClient;
 
 @Component
 public class RestAdapterProvider {
@@ -30,8 +32,12 @@ public class RestAdapterProvider {
     }
 
     public RestAdapter get() {
+
+        final OkHttpClient okHttpClient = new OkHttpClient();
+
         final RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint(this.endPoint)
+                .setClient(new OkClient(okHttpClient))
                 .build();
         return restAdapter;
     }
