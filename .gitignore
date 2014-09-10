@@ -1,10 +1,18 @@
-bin
+# folders
+bin/
 out/
-build
-repos
+build/
+target/
+repos/
+
+# files
 .classpath
 .project
 .settings
 .gradle
+
 *.log
+*.iml
+*.ims
+
 !gradle/wrapper/gradle-wrapper.jar
