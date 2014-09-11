@@ -10,6 +10,7 @@ repos/
 .project
 .settings
 .gradle
+.idea
 
 *.log
 *.iml
