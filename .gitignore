@@ -16,4 +16,6 @@ repos/
 *.iml
 *.ims
 
+smsmoduledb.*
+
 !gradle/wrapper/gradle-wrapper.jar

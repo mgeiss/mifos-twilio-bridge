@@ -7,6 +7,14 @@ endpoints:
   shutdown:
     enabled: true
 
+# database configuration
+spring:
+  datasource:
+    url: jdbc:hsqldb:file:smsmoduledb
+    username: sa
+    password:
+    driver-class-name: org.hsqldb.jdbcDriver
+
 # app related configuration
 mifos:
   endpoint: https://demo.openmf.org/mifosng-provider/api/v1/
