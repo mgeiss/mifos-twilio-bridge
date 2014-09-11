@@ -27,7 +27,7 @@ executable jar file by calling:
         <th>Result</th>
     </tr>
     <tr>
-        <td>/twilio/sms</td>
+        <td>/modules/sms</td>
         <td>POST</td>
         <td>X-Mifos-API-Key<br>X-Mifos-Entity<br>X-Mifos-Action</td>
         <td>none</td>
