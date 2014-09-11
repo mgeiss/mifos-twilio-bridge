@@ -18,24 +18,24 @@ package org.mifos.module.twilio.controller;
 import org.mifos.module.twilio.exception.InvalidApiKeyException;
 import org.mifos.module.twilio.exception.UnknownEventTypeException;
 import org.mifos.module.twilio.service.SecurityService;
-import org.mifos.module.twilio.service.TwilioBridgeService;
+import org.mifos.module.twilio.service.MifosSMSBridgeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/twilio")
-public class TwilioSmsController {
+@RequestMapping("/modules")
+public class MifosSmsController {
 
     private final SecurityService securityService;
-    private final TwilioBridgeService twilioBridgeService;
+    private final MifosSMSBridgeService mifosSMSBridgeService;
 
     @Autowired
-    public TwilioSmsController(final SecurityService securityService,
-                               final TwilioBridgeService twilioBridgeService) {
+    public MifosSmsController(final SecurityService securityService,
+                              final MifosSMSBridgeService mifosSMSBridgeService) {
         super();
         this.securityService = securityService;
-        this.twilioBridgeService = twilioBridgeService;
+        this.mifosSMSBridgeService = mifosSMSBridgeService;
     }
 
     @RequestMapping(value = "/sms", method = RequestMethod.POST, consumes = {"application/json"}, produces = {"application/json"})
@@ -44,7 +44,7 @@ public class TwilioSmsController {
                                  @RequestHeader("X-Mifos-Action") final String action,
                                  @RequestBody final String payload) {
         this.securityService.verifyApiKey(apiKey);
-        this.twilioBridgeService.sendShortMessage(entity, action, payload);
+        this.mifosSMSBridgeService.sendShortMessage(entity, action, payload);
     }
 
     @ExceptionHandler

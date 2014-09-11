@@ -29,10 +29,10 @@ public class SecurityService {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityService.class);
 
-    @Value("${mifos.twilio.accountid}")
+    @Value("${mifos.smsgatewayprovider.accountid}")
     private String twilioAccountId;
 
-    @Value("${mifos.twilio.authtoken}")
+    @Value("${mifos.smsgatewayprovider.authtoken}")
     private String twilioAuthToken;
 
     @Value("${mifos.authtoken}")

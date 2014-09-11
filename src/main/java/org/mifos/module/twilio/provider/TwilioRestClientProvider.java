@@ -30,24 +30,24 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Component
-public class TwilioRestClientProvider {
+public class TwilioRestClientProvider implements SMSGateway {
 
     private static final Logger logger = LoggerFactory.getLogger(TwilioRestClientProvider.class);
 
-    @Value("${mifos.twilio.accountid}")
+    @Value("${mifos.smsgatewayprovider.accountid}")
     private String accountId;
 
-    @Value("${mifos.twilio.authtoken}")
+    @Value("${mifos.smsgatewayprovider.authtoken}")
     private String authToken;
 
-    @Value("${mifos.twilio.phoneno}")
+    @Value("${mifos.smsgatewayprovider.phoneno}")
     private String phoneNo;
 
-    public TwilioRestClientProvider() {
+    TwilioRestClientProvider() {
         super();
     }
 
-    public TwilioRestClient get() {
+    TwilioRestClient get() {
         final TwilioRestClient client = new TwilioRestClient(accountId, authToken);
 
         return client;

@@ -30,16 +30,9 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
         "org.mifos.module.twilio.provider",
         "org.mifos.module.twilio.listener",
         "org.mifos.module.twilio.parser"})
-public class TwilioBridgeConfiguration {
+public class MifosSMSBridgeTestConfiguration {
 
-    public TwilioBridgeConfiguration() {
+    public MifosSMSBridgeTestConfiguration() {
         super();
-    }
-
-    @Bean
-    public SimpleApplicationEventMulticaster applicationEventMulticaster() {
-        final SimpleApplicationEventMulticaster multicaster = new SimpleApplicationEventMulticaster();
-        multicaster.setTaskExecutor(new SimpleAsyncTaskExecutor());
-        return multicaster;
     }
 }

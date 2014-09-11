@@ -18,6 +18,8 @@ package org.mifos.module.twilio.listener;
 import org.mifos.module.twilio.domain.SendSMSResponse;
 import org.mifos.module.twilio.event.SendSMSEvent;
 import org.mifos.module.twilio.parser.JsonParser;
+import org.mifos.module.twilio.provider.SMSGateway;
+import org.mifos.module.twilio.provider.SMSGatewayProvider;
 import org.mifos.module.twilio.provider.TwilioRestClientProvider;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,14 +32,14 @@ public class SendSMSEventListener implements ApplicationListener<SendSMSEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(SendSMSEventListener.class);
 
-    private final TwilioRestClientProvider twilioRestClientProvider;
+    private final SMSGatewayProvider smsGatewayProvider;
     private final JsonParser jsonParser;
 
     @Autowired
-    public SendSMSEventListener(final TwilioRestClientProvider twilioRestClientProvider,
+    public SendSMSEventListener(final SMSGatewayProvider smsGatewayProvider,
                                 final JsonParser jsonParser) {
         super();
-        this.twilioRestClientProvider = twilioRestClientProvider;
+        this.smsGatewayProvider = smsGatewayProvider;
         this.jsonParser = jsonParser;
     }
 
@@ -46,7 +48,9 @@ public class SendSMSEventListener implements ApplicationListener<SendSMSEvent> {
         logger.info("Send SMS event received, trying to process ...");
         final SendSMSResponse sendSMSResponse = this.jsonParser.parse(sendSMSEvent.getPayload(), SendSMSResponse.class);
 
-        this.twilioRestClientProvider.sendMessage(sendSMSResponse.getMobileNo(), sendSMSResponse.getMessage());
+        final SMSGateway smsGateway = this.smsGatewayProvider.get();
+        smsGateway.sendMessage(sendSMSResponse.getMobileNo(), sendSMSResponse.getMessage());
+
         logger.info("Send SMS event processed!");
     }
 }

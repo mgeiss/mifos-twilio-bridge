@@ -23,6 +23,8 @@ import org.mifos.module.twilio.domain.LoanRepaymentResponse;
 import org.mifos.module.twilio.event.LoanRepaymentEvent;
 import org.mifos.module.twilio.parser.JsonParser;
 import org.mifos.module.twilio.provider.RestAdapterProvider;
+import org.mifos.module.twilio.provider.SMSGateway;
+import org.mifos.module.twilio.provider.SMSGatewayProvider;
 import org.mifos.module.twilio.provider.TwilioRestClientProvider;
 import org.mifos.module.twilio.service.MifosClientService;
 import org.mifos.module.twilio.service.MifosLoanService;
@@ -52,15 +54,15 @@ public class LoanRepaymentEventListener implements ApplicationListener<LoanRepay
     private static final Logger logger = LoggerFactory.getLogger(CreateClientEventListener.class);
 
     private final RestAdapterProvider restAdapterProvider;
-    private final TwilioRestClientProvider twilioRestClientProvider;
+    private final SMSGatewayProvider smsGatewayProvider;
     private final JsonParser jsonParser;
 
     @Autowired
     public LoanRepaymentEventListener(final RestAdapterProvider restAdapterProvider,
-                                      final TwilioRestClientProvider twilioRestClientProvider,
+                                      final SMSGatewayProvider smsGatewayProvider,
                                       final JsonParser jsonParser) {
         this.restAdapterProvider = restAdapterProvider;
-        this.twilioRestClientProvider = twilioRestClientProvider;
+        this.smsGatewayProvider = smsGatewayProvider;
         this.jsonParser = jsonParser;
     }
 
@@ -91,7 +93,8 @@ public class LoanRepaymentEventListener implements ApplicationListener<LoanRepay
                 final StringWriter stringWriter = new StringWriter();
                 Velocity.evaluate(velocityContext, stringWriter, "LoanRepaymentMessage", this.messageTemplate);
 
-                this.twilioRestClientProvider.sendMessage(mobileNo, stringWriter.toString());
+                final SMSGateway smsGateway = this.smsGatewayProvider.get();
+                smsGateway.sendMessage(mobileNo, stringWriter.toString());
             }
             logger.info("Loan repayment event processed!");
         } catch (RetrofitError rer) {

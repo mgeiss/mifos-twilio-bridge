@@ -5,7 +5,7 @@ configurations {
 }
 
 war {
-    baseName = 'mifos-twilio-bridge'
+    baseName = 'mifos-sms-bridge'
     version = '0.0.1'
 }
 

@@ -21,6 +21,8 @@ import org.mifos.module.twilio.domain.Client;
 import org.mifos.module.twilio.domain.CreateClientResponse;
 import org.mifos.module.twilio.event.CreateClientEvent;
 import org.mifos.module.twilio.provider.RestAdapterProvider;
+import org.mifos.module.twilio.provider.SMSGateway;
+import org.mifos.module.twilio.provider.SMSGatewayProvider;
 import org.mifos.module.twilio.provider.TwilioRestClientProvider;
 import org.mifos.module.twilio.service.MifosClientService;
 import org.mifos.module.twilio.parser.JsonParser;
@@ -50,16 +52,16 @@ public class CreateClientEventListener implements ApplicationListener<CreateClie
     private static final Logger logger = LoggerFactory.getLogger(CreateClientEventListener.class);
 
     private final RestAdapterProvider restAdapterProvider;
-    private final TwilioRestClientProvider twilioRestClientProvider;
+    private final SMSGatewayProvider smsGatewayProvider;
     private final JsonParser jsonParser;
 
     @Autowired
     public CreateClientEventListener(final RestAdapterProvider restAdapterProvider,
-                                     final TwilioRestClientProvider twilioRestClientProvider,
+                                     final SMSGatewayProvider smsGatewayProvider,
                                      final JsonParser jsonParser) {
         super();
-        this.twilioRestClientProvider = twilioRestClientProvider;
         this.restAdapterProvider = restAdapterProvider;
+        this.smsGatewayProvider = smsGatewayProvider;
         this.jsonParser = jsonParser;
     }
 
@@ -86,7 +88,8 @@ public class CreateClientEventListener implements ApplicationListener<CreateClie
                 final StringWriter stringWriter = new StringWriter();
                 Velocity.evaluate(velocityContext, stringWriter, "CreateClientMessage", this.messageTemplate);
 
-                this.twilioRestClientProvider.sendMessage(mobileNo, stringWriter.toString());
+                final SMSGateway smsGateway = this.smsGatewayProvider.get();
+                smsGateway.sendMessage(mobileNo, stringWriter.toString());
             }
             logger.info("Create client event processed!");
         } catch (RetrofitError rer) {

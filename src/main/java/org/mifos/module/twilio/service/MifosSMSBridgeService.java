@@ -9,11 +9,11 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.stereotype.Service;
 
 @Service
-public class TwilioBridgeService implements ApplicationEventPublisherAware {
+public class MifosSMSBridgeService implements ApplicationEventPublisherAware {
 
     private ApplicationEventPublisher eventPublisher;
 
-    public TwilioBridgeService() {
+    public MifosSMSBridgeService() {
         super();
     }
 
