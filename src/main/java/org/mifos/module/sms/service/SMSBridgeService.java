@@ -50,7 +50,6 @@ public class SMSBridgeService implements ApplicationEventPublisherAware {
 
     public SMSBridgeConfig findByTenantId(final String tenantId) {
         final SMSBridgeConfig smsBridgeConfig = this.smsBridgeConfigRepository.findByTenantId(tenantId);
-        logger.error(tenantId);
         return smsBridgeConfig;
     }
 
