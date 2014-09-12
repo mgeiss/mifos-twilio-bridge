@@ -15,40 +15,30 @@
  */
 package org.mifos.module.sms.provider;
 
+import com.squareup.okhttp.OkHttpClient;
+import org.mifos.module.sms.domain.SMSBridgeConfig;
+import org.springframework.stereotype.Component;
+import retrofit.RestAdapter;
+import retrofit.client.OkClient;
+
+import javax.net.ssl.*;
 import java.security.SecureRandom;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
-import com.squareup.okhttp.OkHttpClient;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
-import retrofit.RestAdapter;
-import retrofit.client.OkClient;
-
 @Component
 public class RestAdapterProvider {
-
-    @Value("${mifos.endpoint}")
-    private String endPoint;
 
     public RestAdapterProvider() {
         super();
     }
 
-    public RestAdapter get() {
+    public RestAdapter get(final SMSBridgeConfig smsBridgeConfig) {
 
         final OkHttpClient okHttpClient = this.createClient();
 
         final RestAdapter restAdapter = new RestAdapter.Builder()
-                .setEndpoint(this.endPoint)
+                .setEndpoint(smsBridgeConfig.getEndpoint())
                 .setClient(new OkClient(okHttpClient))
                 .build();
         return restAdapter;

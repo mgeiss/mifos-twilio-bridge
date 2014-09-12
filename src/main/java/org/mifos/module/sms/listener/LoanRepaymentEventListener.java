@@ -20,13 +20,16 @@ import org.apache.velocity.app.Velocity;
 import org.mifos.module.sms.domain.Client;
 import org.mifos.module.sms.domain.Loan;
 import org.mifos.module.sms.domain.LoanRepaymentResponse;
+import org.mifos.module.sms.domain.SMSBridgeConfig;
 import org.mifos.module.sms.event.LoanRepaymentEvent;
 import org.mifos.module.sms.parser.JsonParser;
 import org.mifos.module.sms.provider.RestAdapterProvider;
 import org.mifos.module.sms.provider.SMSGateway;
 import org.mifos.module.sms.provider.SMSGatewayProvider;
+import org.mifos.module.sms.repository.SMSBridgeConfigRepository;
 import org.mifos.module.sms.service.MifosClientService;
 import org.mifos.module.sms.service.MifosLoanService;
+import org.mifos.module.sms.util.AuthorizationTokenBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,25 +44,22 @@ import java.io.StringWriter;
 @Component
 public class LoanRepaymentEventListener implements ApplicationListener<LoanRepaymentEvent> {
 
-    @Value("${mifos.authtoken}")
-    private String authToken;
-
-    @Value("${mifos.tenant}")
-    private String tenant;
+    private static final Logger logger = LoggerFactory.getLogger(CreateClientEventListener.class);
 
     @Value("${message.template.loanrepayment}")
     private String messageTemplate;
 
-    private static final Logger logger = LoggerFactory.getLogger(CreateClientEventListener.class);
-
+    private final SMSBridgeConfigRepository smsBridgeConfigRepository;
     private final RestAdapterProvider restAdapterProvider;
     private final SMSGatewayProvider smsGatewayProvider;
     private final JsonParser jsonParser;
 
     @Autowired
-    public LoanRepaymentEventListener(final RestAdapterProvider restAdapterProvider,
+    public LoanRepaymentEventListener(final SMSBridgeConfigRepository smsBridgeConfigRepository,
+                                      final RestAdapterProvider restAdapterProvider,
                                       final SMSGatewayProvider smsGatewayProvider,
                                       final JsonParser jsonParser) {
+        this.smsBridgeConfigRepository = smsBridgeConfigRepository;
         this.restAdapterProvider = restAdapterProvider;
         this.smsGatewayProvider = smsGatewayProvider;
         this.jsonParser = jsonParser;
@@ -68,18 +68,26 @@ public class LoanRepaymentEventListener implements ApplicationListener<LoanRepay
     @Override
     public void onApplicationEvent(LoanRepaymentEvent loanRepaymentEvent) {
         logger.info("Loan repayment event received, trying to process ...");
+
+        final SMSBridgeConfig smsBridgeConfig = this.smsBridgeConfigRepository.findByTenantId(loanRepaymentEvent.getTenantId());
+        if (smsBridgeConfig == null) {
+            logger.error("Unknown tenant " + loanRepaymentEvent.getTenantId() + "!");
+            return;
+        }
+
         final LoanRepaymentResponse loanRepaymentResponse = this.jsonParser.parse(loanRepaymentEvent.getPayload(), LoanRepaymentResponse.class);
 
         final long clientId = loanRepaymentResponse.getClientId();
         final long loanId = loanRepaymentResponse.getLoanId();
 
-        final RestAdapter restAdapter = this.restAdapterProvider.get();
+        final RestAdapter restAdapter = this.restAdapterProvider.get(smsBridgeConfig);
         try {
+            final String authToken = AuthorizationTokenBuilder.token(smsBridgeConfig.getMifosToken()).build();
             final MifosLoanService loanService = restAdapter.create(MifosLoanService.class);
-            final Loan loan = loanService.findLoan(this.authToken, this.tenant, loanId);
+            final Loan loan = loanService.findLoan(authToken, smsBridgeConfig.getTenantId(), loanId);
 
             final MifosClientService clientService = restAdapter.create(MifosClientService.class);
-            final Client client = clientService.findClient(this.authToken, this.tenant, clientId);
+            final Client client = clientService.findClient(authToken, smsBridgeConfig.getTenantId(), clientId);
 
             final String mobileNo = client.getMobileNo();
             if (mobileNo != null) {
@@ -92,8 +100,8 @@ public class LoanRepaymentEventListener implements ApplicationListener<LoanRepay
                 final StringWriter stringWriter = new StringWriter();
                 Velocity.evaluate(velocityContext, stringWriter, "LoanRepaymentMessage", this.messageTemplate);
 
-                final SMSGateway smsGateway = this.smsGatewayProvider.get();
-                smsGateway.sendMessage(mobileNo, stringWriter.toString());
+                final SMSGateway smsGateway = this.smsGatewayProvider.get(smsBridgeConfig.getSmsProvider());
+                smsGateway.sendMessage(smsBridgeConfig, mobileNo, stringWriter.toString());
             }
             logger.info("Loan repayment event processed!");
         } catch (RetrofitError rer) {

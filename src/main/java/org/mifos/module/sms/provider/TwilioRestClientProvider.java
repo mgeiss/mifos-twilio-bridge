@@ -21,9 +21,11 @@ import com.twilio.sdk.resource.factory.MessageFactory;
 import com.twilio.sdk.resource.instance.Account;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.mifos.module.sms.domain.SMSBridgeConfig;
+import org.mifos.module.sms.repository.SMSBridgeConfigRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -34,32 +36,27 @@ public class TwilioRestClientProvider implements SMSGateway {
 
     private static final Logger logger = LoggerFactory.getLogger(TwilioRestClientProvider.class);
 
-    @Value("${mifos.smsgatewayprovider.accountid}")
-    private String accountId;
+    private final SMSBridgeConfigRepository smsBridgeConfigRepository;
 
-    @Value("${mifos.smsgatewayprovider.authtoken}")
-    private String authToken;
-
-    @Value("${mifos.smsgatewayprovider.phoneno}")
-    private String phoneNo;
-
-    TwilioRestClientProvider() {
+    @Autowired
+    TwilioRestClientProvider(final SMSBridgeConfigRepository smsBridgeConfigRepository) {
         super();
+        this.smsBridgeConfigRepository = smsBridgeConfigRepository;
     }
 
-    TwilioRestClient get() {
-        final TwilioRestClient client = new TwilioRestClient(accountId, authToken);
+    TwilioRestClient get(final SMSBridgeConfig smsBridgeConfig) {
+        final TwilioRestClient client = new TwilioRestClient(smsBridgeConfig.getSmsProviderAccountId(), smsBridgeConfig.getSmsProviderToken());
 
         return client;
     }
 
-    public boolean sendMessage(final String mobileNo, final String message) {
+    public boolean sendMessage(final SMSBridgeConfig smsBridgeConfig, final String mobileNo, final String message) {
         final List<NameValuePair> messageParams = new ArrayList<NameValuePair>();
-        messageParams.add(new BasicNameValuePair("From", this.phoneNo));
+        messageParams.add(new BasicNameValuePair("From", smsBridgeConfig.getPhoneNo()));
         messageParams.add(new BasicNameValuePair("To", "+" + mobileNo));
         messageParams.add(new BasicNameValuePair("Body", message));
 
-        final TwilioRestClient twilioRestClient = this.get();
+        final TwilioRestClient twilioRestClient = this.get(smsBridgeConfig);
         final Account account = twilioRestClient.getAccount();
         final MessageFactory messageFactory = account.getMessageFactory();
 

@@ -15,10 +15,7 @@
  */
 package org.mifos.module.sms.domain;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import javax.persistence.*;
 
 @Entity
 @Table(name = "sms_bridge_config")
@@ -26,16 +23,31 @@ public class SMSBridgeConfig {
 
     @Id
     @GeneratedValue
-    public Long id;
+    private Long id;
 
-    public String tenant;
-    public String apiKey;
-    public String endpoint;
-    public String mifosToken;
-    public String smsProvider;
-    public String smsProviderAccountId;
-    public String smsProviderToken;
-    public String phoneNo;
+    @Column(name = "tenant_id")
+    private String tenantId;
+
+    @Column(name = "api_key")
+    private String apiKey;
+
+    @Column(name = "endpoint")
+    private String endpoint;
+
+    @Column(name = "mifos_token")
+    private String mifosToken;
+
+    @Column(name = "sms_provider")
+    private String smsProvider;
+
+    @Column(name = "sms_provider_account_id")
+    private String smsProviderAccountId;
+
+    @Column(name = "sms_provider_token")
+    private String smsProviderToken;
+
+    @Column(name = "phone_no")
+    private String phoneNo;
 
     public SMSBridgeConfig() {
         super();
@@ -49,12 +61,12 @@ public class SMSBridgeConfig {
         this.id = id;
     }
 
-    public String getTenant() {
-        return tenant;
+    public String getTenantId() {
+        return tenantId;
     }
 
-    public void setTenant(String tenant) {
-        this.tenant = tenant;
+    public void setTenantId(String tenantId) {
+        this.tenantId = tenantId;
     }
 
     public String getApiKey() {

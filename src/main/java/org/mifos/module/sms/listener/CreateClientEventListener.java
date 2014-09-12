@@ -19,12 +19,15 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.mifos.module.sms.domain.Client;
 import org.mifos.module.sms.domain.CreateClientResponse;
+import org.mifos.module.sms.domain.SMSBridgeConfig;
 import org.mifos.module.sms.event.CreateClientEvent;
+import org.mifos.module.sms.parser.JsonParser;
 import org.mifos.module.sms.provider.RestAdapterProvider;
 import org.mifos.module.sms.provider.SMSGateway;
 import org.mifos.module.sms.provider.SMSGatewayProvider;
+import org.mifos.module.sms.repository.SMSBridgeConfigRepository;
 import org.mifos.module.sms.service.MifosClientService;
-import org.mifos.module.sms.parser.JsonParser;
+import org.mifos.module.sms.util.AuthorizationTokenBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,26 +42,23 @@ import java.io.StringWriter;
 @Component
 public class CreateClientEventListener implements ApplicationListener<CreateClientEvent> {
 
-    @Value("${mifos.authtoken}")
-    private String authToken;
-
-    @Value("${mifos.tenant}")
-    private String tenant;
-
     @Value("${message.template.createclient}")
     private String messageTemplate;
 
     private static final Logger logger = LoggerFactory.getLogger(CreateClientEventListener.class);
 
+    private final SMSBridgeConfigRepository smsBridgeConfigRepository;
     private final RestAdapterProvider restAdapterProvider;
     private final SMSGatewayProvider smsGatewayProvider;
     private final JsonParser jsonParser;
 
     @Autowired
-    public CreateClientEventListener(final RestAdapterProvider restAdapterProvider,
+    public CreateClientEventListener(final SMSBridgeConfigRepository smsBridgeConfigRepository,
+                                     final RestAdapterProvider restAdapterProvider,
                                      final SMSGatewayProvider smsGatewayProvider,
                                      final JsonParser jsonParser) {
         super();
+        this.smsBridgeConfigRepository = smsBridgeConfigRepository;
         this.restAdapterProvider = restAdapterProvider;
         this.smsGatewayProvider = smsGatewayProvider;
         this.jsonParser = jsonParser;
@@ -67,16 +67,23 @@ public class CreateClientEventListener implements ApplicationListener<CreateClie
     @Override
     public void onApplicationEvent(CreateClientEvent createClientEvent) {
         logger.info("Create client event received, trying to process ...");
+
+        final SMSBridgeConfig smsBridgeConfig = this.smsBridgeConfigRepository.findByTenantId(createClientEvent.getTenantId());
+        if (smsBridgeConfig == null) {
+            logger.error("Unknown tenant " + createClientEvent.getTenantId() + "!");
+            return;
+        }
+
         final CreateClientResponse createClientResponse = this.jsonParser.parse(createClientEvent.getPayload(), CreateClientResponse.class);
 
         final long clientId = createClientResponse.getClientId();
 
-        final RestAdapter restAdapter = this.restAdapterProvider.get();
+        final RestAdapter restAdapter = this.restAdapterProvider.get(smsBridgeConfig);
 
         try {
             final MifosClientService clientService = restAdapter.create(MifosClientService.class);
 
-            final Client client = clientService.findClient(this.authToken, this.tenant, clientId);
+            final Client client = clientService.findClient(AuthorizationTokenBuilder.token(smsBridgeConfig.getMifosToken()).build(), smsBridgeConfig.getTenantId(), clientId);
             final String mobileNo = client.getMobileNo();
             if (mobileNo != null) {
                 logger.info("Mobile number found, sending message!");
@@ -87,8 +94,8 @@ public class CreateClientEventListener implements ApplicationListener<CreateClie
                 final StringWriter stringWriter = new StringWriter();
                 Velocity.evaluate(velocityContext, stringWriter, "CreateClientMessage", this.messageTemplate);
 
-                final SMSGateway smsGateway = this.smsGatewayProvider.get();
-                smsGateway.sendMessage(mobileNo, stringWriter.toString());
+                final SMSGateway smsGateway = this.smsGatewayProvider.get(smsBridgeConfig.getSmsProvider());
+                smsGateway.sendMessage(smsBridgeConfig, mobileNo, stringWriter.toString());
             }
             logger.info("Create client event processed!");
         } catch (RetrofitError rer) {

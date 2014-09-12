@@ -15,6 +15,8 @@
  */
 package org.mifos.module.sms.provider;
 
+import org.mifos.module.sms.domain.SMSBridgeConfig;
+
 public interface SMSGateway {
-    boolean sendMessage(final String mobileNo, final String message);
+    boolean sendMessage(final SMSBridgeConfig smsBridgeConfig, final String mobileNo, final String message);
 }

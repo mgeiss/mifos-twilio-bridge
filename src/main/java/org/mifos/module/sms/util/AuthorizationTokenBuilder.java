@@ -13,23 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mifos.module.sms.configuration;
+package org.mifos.module.sms.util;
 
-import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+public class AuthorizationTokenBuilder {
 
-@Configuration
-@EnableAutoConfiguration
-@ComponentScan(basePackages = {
-        "org.mifos.module.sms.controller",
-        "org.mifos.module.sms.service",
-        "org.mifos.module.sms.provider",
-        "org.mifos.module.sms.listener",
-        "org.mifos.module.sms.parser"})
-public class MifosSMSBridgeTestConfiguration {
+    private final String authType = "Basic";
+    private final String token;
 
-    public MifosSMSBridgeTestConfiguration() {
+    private AuthorizationTokenBuilder(final String token) {
         super();
+        this.token = token;
+    }
+
+    public static AuthorizationTokenBuilder token(final String token) {
+        return new AuthorizationTokenBuilder(token);
+    }
+
+    public String build() {
+        return this.authType + " " + this.token;
     }
 }

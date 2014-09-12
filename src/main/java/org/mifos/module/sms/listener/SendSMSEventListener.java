@@ -15,11 +15,13 @@
  */
 package org.mifos.module.sms.listener;
 
+import org.mifos.module.sms.domain.SMSBridgeConfig;
 import org.mifos.module.sms.domain.SendSMSResponse;
 import org.mifos.module.sms.event.SendSMSEvent;
 import org.mifos.module.sms.parser.JsonParser;
 import org.mifos.module.sms.provider.SMSGateway;
 import org.mifos.module.sms.provider.SMSGatewayProvider;
+import org.mifos.module.sms.repository.SMSBridgeConfigRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,13 +33,16 @@ public class SendSMSEventListener implements ApplicationListener<SendSMSEvent> {
 
     private static final Logger logger = LoggerFactory.getLogger(SendSMSEventListener.class);
 
+    private final SMSBridgeConfigRepository smsBridgeConfigRepository;
     private final SMSGatewayProvider smsGatewayProvider;
     private final JsonParser jsonParser;
 
     @Autowired
-    public SendSMSEventListener(final SMSGatewayProvider smsGatewayProvider,
+    public SendSMSEventListener(final SMSBridgeConfigRepository smsBridgeConfigRepository,
+                                final SMSGatewayProvider smsGatewayProvider,
                                 final JsonParser jsonParser) {
         super();
+        this.smsBridgeConfigRepository = smsBridgeConfigRepository;
         this.smsGatewayProvider = smsGatewayProvider;
         this.jsonParser = jsonParser;
     }
@@ -45,10 +50,17 @@ public class SendSMSEventListener implements ApplicationListener<SendSMSEvent> {
     @Override
     public void onApplicationEvent(final SendSMSEvent sendSMSEvent) {
         logger.info("Send SMS event received, trying to process ...");
+
+        final SMSBridgeConfig smsBridgeConfig = this.smsBridgeConfigRepository.findByTenantId(sendSMSEvent.getTenantId());
+        if (smsBridgeConfig == null) {
+            logger.error("Unknown tenant " + sendSMSEvent.getTenantId() + "!");
+            return;
+        }
+
         final SendSMSResponse sendSMSResponse = this.jsonParser.parse(sendSMSEvent.getPayload(), SendSMSResponse.class);
 
-        final SMSGateway smsGateway = this.smsGatewayProvider.get();
-        smsGateway.sendMessage(sendSMSResponse.getMobileNo(), sendSMSResponse.getMessage());
+        final SMSGateway smsGateway = this.smsGatewayProvider.get(smsBridgeConfig.getSmsProvider());
+        smsGateway.sendMessage(smsBridgeConfig, sendSMSResponse.getMobileNo(), sendSMSResponse.getMessage());
 
         logger.info("Send SMS event processed!");
     }

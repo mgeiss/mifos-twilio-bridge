@@ -15,21 +15,31 @@
  */
 package org.mifos.module.sms.configuration;
 
+import org.mifos.module.sms.domain.SMSBridgeConfig;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
+import org.springframework.boot.orm.jpa.EntityScan;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.event.SimpleApplicationEventMulticaster;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 
 @Configuration
 @EnableAutoConfiguration
+@EnableJpaRepositories(basePackages = {
+        "org.mifos.module.sms.repository"
+})
+@EntityScan(basePackageClasses = {
+        SMSBridgeConfig.class
+})
 @ComponentScan(basePackages = {
         "org.mifos.module.sms.controller",
         "org.mifos.module.sms.service",
         "org.mifos.module.sms.provider",
         "org.mifos.module.sms.listener",
-        "org.mifos.module.sms.parser"})
+        "org.mifos.module.sms.parser"
+})
 public class MifosSMSBridgeConfiguration {
 
     public MifosSMSBridgeConfiguration() {

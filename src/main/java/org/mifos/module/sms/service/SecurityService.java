@@ -15,50 +15,46 @@
  */
 package org.mifos.module.sms.service;
 
+import org.mifos.module.sms.domain.SMSBridgeConfig;
 import org.mifos.module.sms.exception.InvalidApiKeyException;
+import org.mifos.module.sms.repository.SMSBridgeConfigRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
-import javax.annotation.PostConstruct;
+import java.util.List;
 
 @Service
 public class SecurityService {
 
     private static final Logger logger = LoggerFactory.getLogger(SecurityService.class);
 
-    @Value("${mifos.smsgatewayprovider.accountid}")
-    private String twilioAccountId;
-
-    @Value("${mifos.smsgatewayprovider.authtoken}")
-    private String twilioAuthToken;
-
-    @Value("${mifos.authtoken}")
-    private String mifosAuthToken;
-
-    private String apiKey;
+    @Autowired
+    private SMSBridgeConfigRepository smsBridgeConfigRepository;
 
     public SecurityService() {
         super();
     }
 
     public void verifyApiKey(final String testee) {
-        if (!this.apiKey.equals(testee)) {
+        final List<SMSBridgeConfig> smsBridgeConfigList = this.smsBridgeConfigRepository.findByApiKey(testee);
+        if (smsBridgeConfigList == null || smsBridgeConfigList.size() == 0) {
             throw new InvalidApiKeyException(testee);
         }
     }
 
-    @PostConstruct
-    void initApiKey() {
+    public String generateApiKey(final String tenantId,
+                                 final String mifosToken,
+                                 final String smsProviderAccount,
+                                 final String smsProviderToken) {
         try {
-            final String source = this.mifosAuthToken + ":" + this.twilioAccountId + ":" + this.twilioAuthToken;
-            this.apiKey = DigestUtils.md5DigestAsHex(source.getBytes("UTF-8"));
-
-            logger.info("Your API key: " + this.apiKey);
+            final String source = tenantId + ":" + mifosToken + ":" + smsProviderAccount + ":" + smsProviderToken;
+            return DigestUtils.md5DigestAsHex(source.getBytes("UTF-8"));
         } catch (Exception ex) {
             logger.error("Could not create API key, reason,", ex);
+            throw new IllegalArgumentException(ex);
         }
     }
 }

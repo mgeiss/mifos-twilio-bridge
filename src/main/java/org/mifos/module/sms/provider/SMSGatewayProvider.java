@@ -16,7 +16,6 @@
 package org.mifos.module.sms.provider;
 
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
@@ -24,17 +23,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class SMSGatewayProvider implements ApplicationContextAware {
 
-    @Value("${mifos.smsgatewayprovider.name}")
-    private String smsGatewayProvider;
-
     private ApplicationContext applicationContext;
 
-    public SMSGateway get() {
-        if (this.smsGatewayProvider.equalsIgnoreCase("twilio")) {
+    public SMSGateway get(final String smsGatewayProvider) {
+        if (smsGatewayProvider.equalsIgnoreCase("twilio")) {
             return this.applicationContext.getBean(TwilioRestClientProvider.class);
         }
 
-        throw new UnsupportedOperationException("Unsupported SMS Gateway Provider: " + this.smsGatewayProvider);
+        throw new UnsupportedOperationException("Unsupported SMS Gateway Provider: " + smsGatewayProvider);
     }
 
     @Override

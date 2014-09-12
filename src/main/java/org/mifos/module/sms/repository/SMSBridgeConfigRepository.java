@@ -17,8 +17,14 @@ package org.mifos.module.sms.repository;
 
 import org.mifos.module.sms.domain.SMSBridgeConfig;
 import org.springframework.data.repository.CrudRepository;
+import org.springframework.stereotype.Repository;
 
+import java.util.List;
+
+@Repository
 public interface SMSBridgeConfigRepository extends CrudRepository<SMSBridgeConfig, Long> {
 
-    public SMSBridgeConfig findByTenenat(final String tenant);
+    public SMSBridgeConfig findByTenantId(final String tenantId);
+
+    public List<SMSBridgeConfig> findByApiKey(final String apiKey);
 }

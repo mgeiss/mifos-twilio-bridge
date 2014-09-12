@@ -15,12 +15,14 @@
  */
 package org.mifos.module.sms.controller;
 
+import org.mifos.module.sms.domain.SMSBridgeConfig;
 import org.mifos.module.sms.exception.InvalidApiKeyException;
 import org.mifos.module.sms.exception.UnknownEventTypeException;
+import org.mifos.module.sms.service.SMSBridgeService;
 import org.mifos.module.sms.service.SecurityService;
-import org.mifos.module.sms.service.MifosSMSBridgeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,23 +30,61 @@ import org.springframework.web.bind.annotation.*;
 public class MifosSmsController {
 
     private final SecurityService securityService;
-    private final MifosSMSBridgeService mifosSMSBridgeService;
+    private final SMSBridgeService smsBridgeService;
 
     @Autowired
     public MifosSmsController(final SecurityService securityService,
-                              final MifosSMSBridgeService mifosSMSBridgeService) {
+                              final SMSBridgeService smsBridgeService) {
         super();
         this.securityService = securityService;
-        this.mifosSMSBridgeService = mifosSMSBridgeService;
+        this.smsBridgeService = smsBridgeService;
     }
 
     @RequestMapping(value = "/sms", method = RequestMethod.POST, consumes = {"application/json"}, produces = {"application/json"})
-    public void sendShortMessage(@RequestHeader("X-Mifos-API-Key") final String apiKey,
-                                 @RequestHeader("X-Mifos-Entity") final String entity,
-                                 @RequestHeader("X-Mifos-Action") final String action,
-                                 @RequestBody final String payload) {
+    public ResponseEntity<Void> sendShortMessage(@RequestHeader("X-Mifos-API-Key") final String apiKey,
+                                                 @RequestHeader("X-Mifos-Platform-TenantId") final String tenantId,
+                                                 @RequestHeader("X-Mifos-Entity") final String entity,
+                                                 @RequestHeader("X-Mifos-Action") final String action,
+                                                 @RequestBody final String payload) {
         this.securityService.verifyApiKey(apiKey);
-        this.mifosSMSBridgeService.sendShortMessage(entity, action, payload);
+        this.smsBridgeService.sendShortMessage(entity, action, tenantId, payload);
+
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+
+    @RequestMapping(value = "/sms/configuration", method = RequestMethod.POST, consumes = {"application/json"}, produces = {"application/json"})
+    public ResponseEntity<String> createSMSBridgeConfig(@RequestBody final SMSBridgeConfig smsBridgeConfig) {
+        if (this.smsBridgeService.findByTenantId(smsBridgeConfig.getTenantId()) != null) {
+            return new ResponseEntity<>("Tenant " + smsBridgeConfig.getTenantId() + " already exists!", HttpStatus.BAD_REQUEST);
+        }
+        final String newApiKey = this.securityService.generateApiKey(smsBridgeConfig.getTenantId(), smsBridgeConfig.getMifosToken(), smsBridgeConfig.getSmsProviderAccountId(), smsBridgeConfig.getSmsProviderToken());
+        smsBridgeConfig.setApiKey(newApiKey);
+        this.smsBridgeService.create(smsBridgeConfig);
+
+        return new ResponseEntity<>(newApiKey, HttpStatus.CREATED);
+    }
+
+
+    @RequestMapping(value = "/sms/configuration/{tenantId}", method = RequestMethod.GET, consumes = {"application/json"}, produces = {"application/json"})
+    public ResponseEntity<SMSBridgeConfig> getSmsBridgeConfig(@RequestHeader("X-Mifos-API-Key") final String apiKey,
+                                                              @PathVariable("tenantId") final String tenantId) {
+        this.securityService.verifyApiKey(apiKey);
+        final SMSBridgeConfig smsBridgeConfig = this.smsBridgeService.findByTenantId(tenantId);
+        return new ResponseEntity<>(smsBridgeConfig, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/sms/configuration/{tenantId}", method = RequestMethod.DELETE, consumes = {"application/json"}, produces = {"application/json"})
+    public ResponseEntity<Void> deleteSmsBridgeConfig(@RequestHeader("X-Mifos-API-Key") final String apiKey,
+                                                      @PathVariable("tenantId") final String tenantId) {
+        this.securityService.verifyApiKey(apiKey);
+        final SMSBridgeConfig smsBridgeConfig = this.smsBridgeService.findByTenantId(tenantId);
+        if (smsBridgeConfig != null) {
+            this.smsBridgeService.delete(smsBridgeConfig.getId());
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     @ExceptionHandler

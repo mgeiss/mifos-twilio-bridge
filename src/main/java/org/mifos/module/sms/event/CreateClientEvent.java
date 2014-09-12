@@ -16,7 +16,7 @@
 package org.mifos.module.sms.event;
 
 public class CreateClientEvent extends AbstractEvent {
-    public CreateClientEvent(Object source, String payload) {
-        super(source, payload);
+    public CreateClientEvent(final Object source, final String tenantId, final String payload) {
+        super(source, tenantId, payload);
     }
 }
