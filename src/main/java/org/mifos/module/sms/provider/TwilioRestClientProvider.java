@@ -36,12 +36,8 @@ public class TwilioRestClientProvider implements SMSGateway {
 
     private static final Logger logger = LoggerFactory.getLogger(TwilioRestClientProvider.class);
 
-    private final SMSBridgeConfigRepository smsBridgeConfigRepository;
-
-    @Autowired
-    TwilioRestClientProvider(final SMSBridgeConfigRepository smsBridgeConfigRepository) {
+    TwilioRestClientProvider() {
         super();
-        this.smsBridgeConfigRepository = smsBridgeConfigRepository;
     }
 
     TwilioRestClient get(final SMSBridgeConfig smsBridgeConfig) {
