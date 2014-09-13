@@ -46,7 +46,7 @@ public class MifosSmsController {
                                                  @RequestHeader("X-Mifos-Entity") final String entity,
                                                  @RequestHeader("X-Mifos-Action") final String action,
                                                  @RequestBody final String payload) {
-        this.securityService.verifyApiKey(apiKey);
+        this.securityService.verifyApiKey(apiKey, tenantId);
         this.smsBridgeService.sendShortMessage(entity, action, tenantId, payload);
 
         return new ResponseEntity<>(HttpStatus.OK);
@@ -69,7 +69,7 @@ public class MifosSmsController {
     @RequestMapping(value = "/sms/configuration/{tenantId}", method = RequestMethod.GET, consumes = {"application/json"}, produces = {"application/json"})
     public ResponseEntity<SMSBridgeConfig> getSmsBridgeConfig(@RequestHeader("X-Mifos-API-Key") final String apiKey,
                                                               @PathVariable("tenantId") final String tenantId) {
-        this.securityService.verifyApiKey(apiKey);
+        this.securityService.verifyApiKey(apiKey, tenantId);
         final SMSBridgeConfig smsBridgeConfig = this.smsBridgeService.findByTenantId(tenantId);
         return new ResponseEntity<>(smsBridgeConfig, HttpStatus.OK);
     }
@@ -77,7 +77,7 @@ public class MifosSmsController {
     @RequestMapping(value = "/sms/configuration/{tenantId}", method = RequestMethod.DELETE, consumes = {"application/json"}, produces = {"application/json"})
     public ResponseEntity<Void> deleteSmsBridgeConfig(@RequestHeader("X-Mifos-API-Key") final String apiKey,
                                                       @PathVariable("tenantId") final String tenantId) {
-        this.securityService.verifyApiKey(apiKey);
+        this.securityService.verifyApiKey(apiKey, tenantId);
         final SMSBridgeConfig smsBridgeConfig = this.smsBridgeService.findByTenantId(tenantId);
         if (smsBridgeConfig != null) {
             this.smsBridgeService.delete(smsBridgeConfig.getId());

@@ -17,15 +17,13 @@ package org.mifos.module.sms.listener;
 
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
-import org.mifos.module.sms.domain.Client;
-import org.mifos.module.sms.domain.Loan;
-import org.mifos.module.sms.domain.LoanRepaymentResponse;
-import org.mifos.module.sms.domain.SMSBridgeConfig;
+import org.mifos.module.sms.domain.*;
 import org.mifos.module.sms.event.LoanRepaymentEvent;
 import org.mifos.module.sms.parser.JsonParser;
 import org.mifos.module.sms.provider.RestAdapterProvider;
 import org.mifos.module.sms.provider.SMSGateway;
 import org.mifos.module.sms.provider.SMSGatewayProvider;
+import org.mifos.module.sms.repository.EventSourceRepository;
 import org.mifos.module.sms.repository.SMSBridgeConfigRepository;
 import org.mifos.module.sms.service.MifosClientService;
 import org.mifos.module.sms.service.MifosLoanService;
@@ -36,10 +34,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationListener;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import retrofit.RestAdapter;
 import retrofit.RetrofitError;
 
 import java.io.StringWriter;
+import java.util.Date;
 
 @Component
 public class LoanRepaymentEventListener implements ApplicationListener<LoanRepaymentEvent> {
@@ -50,32 +50,38 @@ public class LoanRepaymentEventListener implements ApplicationListener<LoanRepay
     private String messageTemplate;
 
     private final SMSBridgeConfigRepository smsBridgeConfigRepository;
+    private final EventSourceRepository eventSourceRepository;
     private final RestAdapterProvider restAdapterProvider;
     private final SMSGatewayProvider smsGatewayProvider;
     private final JsonParser jsonParser;
 
     @Autowired
     public LoanRepaymentEventListener(final SMSBridgeConfigRepository smsBridgeConfigRepository,
+                                      final EventSourceRepository eventSourceRepository,
                                       final RestAdapterProvider restAdapterProvider,
                                       final SMSGatewayProvider smsGatewayProvider,
                                       final JsonParser jsonParser) {
         this.smsBridgeConfigRepository = smsBridgeConfigRepository;
+        this.eventSourceRepository = eventSourceRepository;
         this.restAdapterProvider = restAdapterProvider;
         this.smsGatewayProvider = smsGatewayProvider;
         this.jsonParser = jsonParser;
     }
 
+    @Transactional
     @Override
     public void onApplicationEvent(LoanRepaymentEvent loanRepaymentEvent) {
         logger.info("Loan repayment event received, trying to process ...");
 
-        final SMSBridgeConfig smsBridgeConfig = this.smsBridgeConfigRepository.findByTenantId(loanRepaymentEvent.getTenantId());
+        final EventSource eventSource = this.eventSourceRepository.findOne(loanRepaymentEvent.getEventId());
+
+        final SMSBridgeConfig smsBridgeConfig = this.smsBridgeConfigRepository.findByTenantId(eventSource.getTenantId());
         if (smsBridgeConfig == null) {
-            logger.error("Unknown tenant " + loanRepaymentEvent.getTenantId() + "!");
+            logger.error("Unknown tenant " + eventSource.getTenantId() + "!");
             return;
         }
 
-        final LoanRepaymentResponse loanRepaymentResponse = this.jsonParser.parse(loanRepaymentEvent.getPayload(), LoanRepaymentResponse.class);
+        final LoanRepaymentResponse loanRepaymentResponse = this.jsonParser.parse(eventSource.getPayload(), LoanRepaymentResponse.class);
 
         final long clientId = loanRepaymentResponse.getClientId();
         final long loanId = loanRepaymentResponse.getLoanId();
@@ -103,11 +109,17 @@ public class LoanRepaymentEventListener implements ApplicationListener<LoanRepay
                 final SMSGateway smsGateway = this.smsGatewayProvider.get(smsBridgeConfig.getSmsProvider());
                 smsGateway.sendMessage(smsBridgeConfig, mobileNo, stringWriter.toString());
             }
+            eventSource.setProcessed(Boolean.TRUE);
             logger.info("Loan repayment event processed!");
         } catch (RetrofitError rer) {
             if (rer.getResponse().getStatus() == 404) {
                 logger.info("Loan not found!");
             }
+            eventSource.setProcessed(Boolean.FALSE);
+            eventSource.setErrorMessage(rer.getMessage());
+
         }
+        eventSource.setLastModifiedOn(new Date());
+        this.eventSourceRepository.save(eventSource);
     }
 }

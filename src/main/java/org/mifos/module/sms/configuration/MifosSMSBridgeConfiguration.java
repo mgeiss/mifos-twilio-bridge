@@ -15,6 +15,7 @@
  */
 package org.mifos.module.sms.configuration;
 
+import org.mifos.module.sms.domain.EventSource;
 import org.mifos.module.sms.domain.SMSBridgeConfig;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.orm.jpa.EntityScan;
@@ -31,7 +32,8 @@ import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
         "org.mifos.module.sms.repository"
 })
 @EntityScan(basePackageClasses = {
-        SMSBridgeConfig.class
+        SMSBridgeConfig.class,
+        EventSource.class
 })
 @ComponentScan(basePackages = {
         "org.mifos.module.sms.controller",

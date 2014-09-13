@@ -38,10 +38,10 @@ public class SecurityService {
         super();
     }
 
-    public void verifyApiKey(final String testee) {
-        final List<SMSBridgeConfig> smsBridgeConfigList = this.smsBridgeConfigRepository.findByApiKey(testee);
-        if (smsBridgeConfigList == null || smsBridgeConfigList.size() == 0) {
-            throw new InvalidApiKeyException(testee);
+    public void verifyApiKey(final String apiKey, final String tenantId) {
+        final SMSBridgeConfig smsBridgeConfigList = this.smsBridgeConfigRepository.findByApiKey(apiKey);
+        if (smsBridgeConfigList == null || !smsBridgeConfigList.getTenantId().equals(tenantId)) {
+            throw new InvalidApiKeyException(apiKey);
         }
     }
 

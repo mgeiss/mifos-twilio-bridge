@@ -19,20 +19,14 @@ import org.springframework.context.ApplicationEvent;
 
 public abstract class AbstractEvent extends ApplicationEvent {
 
-    private final String tenantId;
-    private final String payload;
+    private final Long eventId;
 
-    public AbstractEvent(final Object source, final String tenantId, String payload) {
+    public AbstractEvent(final Object source, final Long eventId) {
         super(source);
-        this.tenantId = tenantId;
-        this.payload = payload;
+        this.eventId = eventId;
     }
 
-    public String getTenantId() {
-        return tenantId;
-    }
-
-    public String getPayload() {
-        return payload;
+    public Long getEventId() {
+        return eventId;
     }
 }

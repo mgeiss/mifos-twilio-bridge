@@ -16,7 +16,7 @@
 package org.mifos.module.sms.event;
 
 public class SendSMSEvent extends AbstractEvent {
-    public SendSMSEvent(final Object source, final String tenantId, final String payload) {
-        super(source, tenantId, payload);
+    public SendSMSEvent(final Object source, final Long eventId) {
+        super(source, eventId);
     }
 }

@@ -19,8 +19,8 @@ import javax.persistence.*;
 import java.util.Date;
 
 @Entity
-@Table(name = "sms_bridge_config")
-public class SMSBridgeConfig {
+@Table(name = "event_sourcing")
+public class EventSource {
 
     @Id
     @GeneratedValue
@@ -29,26 +29,20 @@ public class SMSBridgeConfig {
     @Column(name = "tenant_id")
     private String tenantId;
 
-    @Column(name = "api_key")
-    private String apiKey;
+    @Column(name = "entity")
+    private String entity;
 
-    @Column(name = "endpoint")
-    private String endpoint;
+    @Column(name = "action")
+    private String action;
 
-    @Column(name = "mifos_token")
-    private String mifosToken;
+    @Column(name = "payload")
+    private String payload;
 
-    @Column(name = "sms_provider")
-    private String smsProvider;
+    @Column(name = "processed")
+    private Boolean processed;
 
-    @Column(name = "sms_provider_account_id")
-    private String smsProviderAccountId;
-
-    @Column(name = "sms_provider_token")
-    private String smsProviderToken;
-
-    @Column(name = "phone_no")
-    private String phoneNo;
+    @Column(name = "error_message")
+    private String errorMessage;
 
     @Column(name = "created_on")
     @Temporal(TemporalType.TIMESTAMP)
@@ -58,7 +52,7 @@ public class SMSBridgeConfig {
     @Temporal(TemporalType.TIMESTAMP)
     private Date lastModifiedOn;
 
-    public SMSBridgeConfig() {
+    public EventSource() {
         super();
     }
 
@@ -78,60 +72,44 @@ public class SMSBridgeConfig {
         this.tenantId = tenantId;
     }
 
-    public String getApiKey() {
-        return apiKey;
+    public String getEntity() {
+        return entity;
     }
 
-    public void setApiKey(String apiKey) {
-        this.apiKey = apiKey;
+    public void setEntity(String entity) {
+        this.entity = entity;
     }
 
-    public String getEndpoint() {
-        return endpoint;
+    public String getAction() {
+        return action;
     }
 
-    public void setEndpoint(String endpoint) {
-        this.endpoint = endpoint;
+    public void setAction(String action) {
+        this.action = action;
     }
 
-    public String getMifosToken() {
-        return mifosToken;
+    public String getPayload() {
+        return payload;
     }
 
-    public void setMifosToken(String mifosToken) {
-        this.mifosToken = mifosToken;
+    public void setPayload(String payload) {
+        this.payload = payload;
     }
 
-    public String getSmsProvider() {
-        return smsProvider;
+    public Boolean getProcessed() {
+        return processed;
     }
 
-    public void setSmsProvider(String smsProvider) {
-        this.smsProvider = smsProvider;
+    public void setProcessed(Boolean processed) {
+        this.processed = processed;
     }
 
-    public String getSmsProviderAccountId() {
-        return smsProviderAccountId;
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
-    public void setSmsProviderAccountId(String smsProviderAccountId) {
-        this.smsProviderAccountId = smsProviderAccountId;
-    }
-
-    public String getSmsProviderToken() {
-        return smsProviderToken;
-    }
-
-    public void setSmsProviderToken(String smsProviderToken) {
-        this.smsProviderToken = smsProviderToken;
-    }
-
-    public String getPhoneNo() {
-        return phoneNo;
-    }
-
-    public void setPhoneNo(String phoneNo) {
-        this.phoneNo = phoneNo;
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 
     public Date getCreatedOn() {

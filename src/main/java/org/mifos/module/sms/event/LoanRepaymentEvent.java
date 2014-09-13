@@ -16,7 +16,7 @@
 package org.mifos.module.sms.event;
 
 public class LoanRepaymentEvent extends AbstractEvent {
-    public LoanRepaymentEvent(final Object source, final String tenantId, final String payload) {
-        super(source, tenantId, payload);
+    public LoanRepaymentEvent(final Object source, final Long eventId) {
+        super(source, eventId);
     }
 }
