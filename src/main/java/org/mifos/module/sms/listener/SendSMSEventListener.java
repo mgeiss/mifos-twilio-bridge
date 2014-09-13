@@ -19,6 +19,7 @@ import org.mifos.module.sms.domain.EventSource;
 import org.mifos.module.sms.domain.SMSBridgeConfig;
 import org.mifos.module.sms.domain.SendSMSResponse;
 import org.mifos.module.sms.event.SendSMSEvent;
+import org.mifos.module.sms.exception.SMSGatewayException;
 import org.mifos.module.sms.parser.JsonParser;
 import org.mifos.module.sms.provider.SMSGateway;
 import org.mifos.module.sms.provider.SMSGatewayProvider;
@@ -71,11 +72,13 @@ public class SendSMSEventListener implements ApplicationListener<SendSMSEvent> {
         final SendSMSResponse sendSMSResponse = this.jsonParser.parse(eventSource.getPayload(), SendSMSResponse.class);
 
         final SMSGateway smsGateway = this.smsGatewayProvider.get(smsBridgeConfig.getSmsProvider());
-        if (smsGateway.sendMessage(smsBridgeConfig, sendSMSResponse.getMobileNo(), sendSMSResponse.getMessage())) {
+        try {
+            smsGateway.sendMessage(smsBridgeConfig, sendSMSResponse.getMobileNo(), sendSMSResponse.getMessage());
             eventSource.setProcessed(Boolean.TRUE);
             logger.info("Send SMS event processed!");
-        } else {
+        } catch (SMSGatewayException sgex) {
             eventSource.setProcessed(Boolean.FALSE);
+            eventSource.setErrorMessage(sgex.getMessage());
         }
         eventSource.setLastModifiedOn(new Date());
         this.eventSourceRepository.save(eventSource);

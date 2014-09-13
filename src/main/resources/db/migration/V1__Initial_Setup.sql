@@ -23,7 +23,7 @@ CREATE TABLE event_sourcing (
   entity           VARCHAR(32)                                                   NOT NULL,
   action           VARCHAR(32)                                                   NOT NULL,
   payload          VARCHAR(4096)                                                 NOT NULL,
-  processed        BOOLEAN DEFAULT FALSE                                         NOT NULL,
+  processed        BOOLEAN                                                       NOT NULL,
   error_message    VARCHAR(256),
   created_on       TIMESTAMP                                                     NOT NULL,
   last_modified_on TIMESTAMP                                                     NOT NULL

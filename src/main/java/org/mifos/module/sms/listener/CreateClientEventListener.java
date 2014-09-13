@@ -22,6 +22,7 @@ import org.mifos.module.sms.domain.CreateClientResponse;
 import org.mifos.module.sms.domain.EventSource;
 import org.mifos.module.sms.domain.SMSBridgeConfig;
 import org.mifos.module.sms.event.CreateClientEvent;
+import org.mifos.module.sms.exception.SMSGatewayException;
 import org.mifos.module.sms.parser.JsonParser;
 import org.mifos.module.sms.provider.RestAdapterProvider;
 import org.mifos.module.sms.provider.SMSGateway;
@@ -115,6 +116,9 @@ public class CreateClientEventListener implements ApplicationListener<CreateClie
             }
             eventSource.setProcessed(Boolean.FALSE);
             eventSource.setErrorMessage(rer.getMessage());
+        } catch (SMSGatewayException sgex) {
+            eventSource.setProcessed(Boolean.FALSE);
+            eventSource.setErrorMessage(sgex.getMessage());
         }
         eventSource.setLastModifiedOn(new Date());
         this.eventSourceRepository.save(eventSource);

@@ -24,4 +24,5 @@ import java.util.List;
 @Repository
 public interface EventSourceRepository extends CrudRepository<EventSource, Long> {
     public List<EventSource> findByTenantId(final String tenantId);
+    public List<EventSource> findByTenantIdAndProcessed(final String tenantId, final Boolean processed);
 }

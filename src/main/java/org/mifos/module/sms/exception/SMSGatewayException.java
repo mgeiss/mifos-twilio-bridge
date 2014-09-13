@@ -13,12 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.mifos.module.sms.provider;
+package org.mifos.module.sms.exception;
 
-import org.mifos.module.sms.domain.SMSBridgeConfig;
-import org.mifos.module.sms.exception.SMSGatewayException;
-
-public interface SMSGateway {
-    void sendMessage(final SMSBridgeConfig smsBridgeConfig, final String mobileNo, final String message)
-            throws SMSGatewayException;
+public class SMSGatewayException extends Exception {
+    public SMSGatewayException(String message) {
+        super(message);
+    }
 }

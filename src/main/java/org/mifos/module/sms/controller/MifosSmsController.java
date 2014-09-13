@@ -15,6 +15,7 @@
  */
 package org.mifos.module.sms.controller;
 
+import org.mifos.module.sms.domain.EventSource;
 import org.mifos.module.sms.domain.SMSBridgeConfig;
 import org.mifos.module.sms.exception.InvalidApiKeyException;
 import org.mifos.module.sms.exception.UnknownEventTypeException;
@@ -24,6 +25,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/modules")
@@ -55,12 +58,12 @@ public class MifosSmsController {
 
     @RequestMapping(value = "/sms/configuration", method = RequestMethod.POST, consumes = {"application/json"}, produces = {"application/json"})
     public ResponseEntity<String> createSMSBridgeConfig(@RequestBody final SMSBridgeConfig smsBridgeConfig) {
-        if (this.smsBridgeService.findByTenantId(smsBridgeConfig.getTenantId()) != null) {
+        if (this.smsBridgeService.findSmsBridgeConfigByTenantId(smsBridgeConfig.getTenantId()) != null) {
             return new ResponseEntity<>("Tenant " + smsBridgeConfig.getTenantId() + " already exists!", HttpStatus.BAD_REQUEST);
         }
         final String newApiKey = this.securityService.generateApiKey(smsBridgeConfig.getTenantId(), smsBridgeConfig.getMifosToken(), smsBridgeConfig.getSmsProviderAccountId(), smsBridgeConfig.getSmsProviderToken());
         smsBridgeConfig.setApiKey(newApiKey);
-        this.smsBridgeService.create(smsBridgeConfig);
+        this.smsBridgeService.createSmsBridgeConfig(smsBridgeConfig);
 
         return new ResponseEntity<>(newApiKey, HttpStatus.CREATED);
     }
@@ -70,7 +73,7 @@ public class MifosSmsController {
     public ResponseEntity<SMSBridgeConfig> getSmsBridgeConfig(@RequestHeader("X-Mifos-API-Key") final String apiKey,
                                                               @PathVariable("tenantId") final String tenantId) {
         this.securityService.verifyApiKey(apiKey, tenantId);
-        final SMSBridgeConfig smsBridgeConfig = this.smsBridgeService.findByTenantId(tenantId);
+        final SMSBridgeConfig smsBridgeConfig = this.smsBridgeService.findSmsBridgeConfigByTenantId(tenantId);
         return new ResponseEntity<>(smsBridgeConfig, HttpStatus.OK);
     }
 
@@ -78,13 +81,31 @@ public class MifosSmsController {
     public ResponseEntity<Void> deleteSmsBridgeConfig(@RequestHeader("X-Mifos-API-Key") final String apiKey,
                                                       @PathVariable("tenantId") final String tenantId) {
         this.securityService.verifyApiKey(apiKey, tenantId);
-        final SMSBridgeConfig smsBridgeConfig = this.smsBridgeService.findByTenantId(tenantId);
+        final SMSBridgeConfig smsBridgeConfig = this.smsBridgeService.findSmsBridgeConfigByTenantId(tenantId);
         if (smsBridgeConfig != null) {
-            this.smsBridgeService.delete(smsBridgeConfig.getId());
+            this.smsBridgeService.deleteSmsBridgeConfig(smsBridgeConfig.getId());
             return new ResponseEntity<>(HttpStatus.OK);
         }
 
         return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    @RequestMapping(value = "/sms/events/{tenantId}", method = RequestMethod.GET, consumes = {"application/json"}, produces = {"application/json"})
+    public ResponseEntity<List<EventSource>> findEventSources(@RequestHeader("X-Mifos-API-Key") final String apiKey,
+                                                              @PathVariable("tenantId") final String tenantId) {
+        this.securityService.verifyApiKey(apiKey, tenantId);
+        final List<EventSource> eventSources = this.smsBridgeService.findEventsSourcesByTenantId(tenantId);
+
+        return new ResponseEntity<>(eventSources, HttpStatus.OK);
+    }
+
+    @RequestMapping(value = "/sms/events/{tenantId}/_resend", method = RequestMethod.POST, consumes = {"application/json"}, produces = {"application/json"})
+    public ResponseEntity<Void> resendEventSources(@RequestHeader("X-Mifos-API-Key") final String apiKey,
+                                                   @PathVariable("tenantId") final String tenantId) {
+        this.securityService.verifyApiKey(apiKey, tenantId);
+        this.smsBridgeService.resendEventsSourcesByTenantId(tenantId);
+
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @ExceptionHandler

@@ -19,6 +19,7 @@ import org.apache.velocity.VelocityContext;
 import org.apache.velocity.app.Velocity;
 import org.mifos.module.sms.domain.*;
 import org.mifos.module.sms.event.LoanRepaymentEvent;
+import org.mifos.module.sms.exception.SMSGatewayException;
 import org.mifos.module.sms.parser.JsonParser;
 import org.mifos.module.sms.provider.RestAdapterProvider;
 import org.mifos.module.sms.provider.SMSGateway;
@@ -117,7 +118,9 @@ public class LoanRepaymentEventListener implements ApplicationListener<LoanRepay
             }
             eventSource.setProcessed(Boolean.FALSE);
             eventSource.setErrorMessage(rer.getMessage());
-
+        } catch (SMSGatewayException sgex) {
+            eventSource.setProcessed(Boolean.FALSE);
+            eventSource.setErrorMessage(sgex.getMessage());
         }
         eventSource.setLastModifiedOn(new Date());
         this.eventSourceRepository.save(eventSource);

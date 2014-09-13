@@ -22,6 +22,7 @@ import com.twilio.sdk.resource.instance.Account;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.mifos.module.sms.domain.SMSBridgeConfig;
+import org.mifos.module.sms.exception.SMSGatewayException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -44,7 +45,9 @@ public class TwilioRestClientProvider implements SMSGateway {
         return client;
     }
 
-    public boolean sendMessage(final SMSBridgeConfig smsBridgeConfig, final String mobileNo, final String message) {
+    @Override
+    public void sendMessage(final SMSBridgeConfig smsBridgeConfig, final String mobileNo, final String message)
+        throws SMSGatewayException {
         final List<NameValuePair> messageParams = new ArrayList<NameValuePair>();
         messageParams.add(new BasicNameValuePair("From", smsBridgeConfig.getPhoneNo()));
         messageParams.add(new BasicNameValuePair("To", "+" + mobileNo));
@@ -57,10 +60,9 @@ public class TwilioRestClientProvider implements SMSGateway {
         try {
             logger.info("Sending SMS to " + mobileNo + " ...");
             messageFactory.create(messageParams);
-            return true;
         } catch (TwilioRestException trex) {
             logger.error("Could not send message, reason:", trex);
-            return false;
+            throw new SMSGatewayException(trex.getMessage());
         }
     }
 }

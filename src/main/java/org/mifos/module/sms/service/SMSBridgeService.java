@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class SMSBridgeService implements ApplicationEventPublisherAware {
@@ -36,11 +37,53 @@ public class SMSBridgeService implements ApplicationEventPublisherAware {
     }
 
     public void sendShortMessage(final String entity, final String action, final String tenantId, final String payload) {
-
         final EventType eventType = EventType.get(entity, action);
 
         final Long eventId = this.saveEvent(tenantId, entity, action, payload);
 
+        this.publishEvent(eventType, eventId);
+    }
+
+    public SMSBridgeConfig findSmsBridgeConfigByTenantId(final String tenantId) {
+        final SMSBridgeConfig smsBridgeConfig = this.smsBridgeConfigRepository.findByTenantId(tenantId);
+        return smsBridgeConfig;
+    }
+
+    @Transactional
+    public Long createSmsBridgeConfig(final SMSBridgeConfig smsBridgeConfig) {
+        final Date now = new Date();
+        smsBridgeConfig.setCreatedOn(now);
+        smsBridgeConfig.setLastModifiedOn(now);
+        final SMSBridgeConfig newSMSmsBridgeConfig = this.smsBridgeConfigRepository.save(smsBridgeConfig);
+        return newSMSmsBridgeConfig.getId();
+    }
+
+    @Transactional
+    public void deleteSmsBridgeConfig(final Long id) {
+        this.smsBridgeConfigRepository.delete(id);
+    }
+
+    public List<EventSource> findEventsSourcesByTenantId(final String tenantId) {
+        return this.eventSourceRepository.findByTenantId(tenantId);
+    }
+
+    public void resendEventsSourcesByTenantId(final String tenantId) {
+        final List<EventSource> eventSources = this.eventSourceRepository.findByTenantIdAndProcessed(tenantId, Boolean.FALSE);
+        if (eventSources != null) {
+            for (EventSource eventSource : eventSources) {
+                final EventType eventType = EventType.get(eventSource.getEntity(), eventSource.getAction());
+
+                this.publishEvent(eventType, eventSource.getId());
+            }
+        }
+    }
+
+    @Override
+    public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
+        this.eventPublisher = eventPublisher;
+    }
+
+    private void publishEvent(final EventType eventType, final Long eventId) {
         switch (eventType) {
             case CREATE_CLIENT:
                 this.eventPublisher.publishEvent(new CreateClientEvent(this, eventId));
@@ -54,39 +97,6 @@ public class SMSBridgeService implements ApplicationEventPublisherAware {
         }
     }
 
-    public SMSBridgeConfig findById(final Long id) {
-        return this.smsBridgeConfigRepository.findOne(id);
-    }
-
-    public SMSBridgeConfig findByTenantId(final String tenantId) {
-        final SMSBridgeConfig smsBridgeConfig = this.smsBridgeConfigRepository.findByTenantId(tenantId);
-        return smsBridgeConfig;
-    }
-
-    @Transactional
-    public Long create(final SMSBridgeConfig smsBridgeConfig) {
-        final Date now = new Date();
-        smsBridgeConfig.setCreatedOn(now);
-        smsBridgeConfig.setLastModifiedOn(now);
-        final SMSBridgeConfig newSMSmsBridgeConfig = this.smsBridgeConfigRepository.save(smsBridgeConfig);
-        return newSMSmsBridgeConfig.getId();
-    }
-
-    @Transactional
-    public void update(final SMSBridgeConfig smsBridgeConfig) {
-        this.smsBridgeConfigRepository.save(smsBridgeConfig);
-    }
-
-    @Transactional
-    public void delete(final Long id) {
-        this.smsBridgeConfigRepository.delete(id);
-    }
-
-    @Override
-    public void setApplicationEventPublisher(ApplicationEventPublisher eventPublisher) {
-        this.eventPublisher = eventPublisher;
-    }
-
     private Long saveEvent(final String tenantId,
                            final String entity,
                            final String action,
@@ -96,6 +106,7 @@ public class SMSBridgeService implements ApplicationEventPublisherAware {
         eventSource.setEntity(entity);
         eventSource.setAction(action);
         eventSource.setPayload(payload);
+        eventSource.setProcessed(Boolean.FALSE);
         final Date now = new Date();
         eventSource.setCreatedOn(now);
         eventSource.setLastModifiedOn(now);
