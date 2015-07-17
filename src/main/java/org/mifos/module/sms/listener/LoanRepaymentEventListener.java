@@ -61,12 +61,14 @@ public class LoanRepaymentEventListener implements ApplicationListener<LoanRepay
                                       final EventSourceRepository eventSourceRepository,
                                       final RestAdapterProvider restAdapterProvider,
                                       final SMSGatewayProvider smsGatewayProvider,
-                                      final JsonParser jsonParser) {
+                                      final JsonParser jsonParser)
+                                       {
         this.smsBridgeConfigRepository = smsBridgeConfigRepository;
         this.eventSourceRepository = eventSourceRepository;
         this.restAdapterProvider = restAdapterProvider;
         this.smsGatewayProvider = smsGatewayProvider;
         this.jsonParser = jsonParser;
+        
     }
 
     @Transactional
@@ -75,7 +77,7 @@ public class LoanRepaymentEventListener implements ApplicationListener<LoanRepay
         logger.info("Loan repayment event received, trying to process ...");
 
         final EventSource eventSource = this.eventSourceRepository.findOne(loanRepaymentEvent.getEventId());
-
+         
         final SMSBridgeConfig smsBridgeConfig = this.smsBridgeConfigRepository.findByTenantId(eventSource.getTenantId());
         if (smsBridgeConfig == null) {
             logger.error("Unknown tenant " + eventSource.getTenantId() + "!");
@@ -111,6 +113,7 @@ public class LoanRepaymentEventListener implements ApplicationListener<LoanRepay
                 smsGateway.sendMessage(smsBridgeConfig, mobileNo, stringWriter.toString());
             }
             eventSource.setProcessed(Boolean.TRUE);
+            
             logger.info("Loan repayment event processed!");
         } catch (RetrofitError rer) {
             if (rer.getResponse().getStatus() == 404) {

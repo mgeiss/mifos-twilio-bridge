@@ -28,6 +28,8 @@ public class SMSGatewayProvider implements ApplicationContextAware {
     public SMSGateway get(final String smsGatewayProvider) {
         if (smsGatewayProvider.equalsIgnoreCase("twilio")) {
             return this.applicationContext.getBean(TwilioRestClientProvider.class);
+        }else if(smsGatewayProvider.equalsIgnoreCase("africastalking")){
+        	return this.applicationContext.getBean(AfricasRestClientProvider.class);
         }
 
         throw new UnsupportedOperationException("Unsupported SMS Gateway Provider: " + smsGatewayProvider);
