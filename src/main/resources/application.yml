@@ -16,13 +16,20 @@ spring:
       ddl-auto: none
 
   datasource:
-    url: jdbc:hsqldb:file:smsmoduledb
-    username: sa
-    password:
-    driver-class-name: org.hsqldb.jdbcDriver
+    url: jdbc:mysql://localhost:3306/mifostenant_default
+    username: root
+    password: mysql
+    driver-class-name: com.mysql.jdbc.Driver
 
 # message templates
 message:
   template:
-    createclient: Hello $name, welcome at Mifos X!
+    createclient: Dear $name, welcome to $branch, your member no is $externalid,Have a blessed day. 
     loanrepayment: Hello $name, repayment for $account received!
+    savingsaccountclose: Dear $name, your account has been closed, collect your savings of $amount . $branch .
+    loanrepaymentsmsreminder: Dear $name, your loan repayment is due on $duedate,Please pay to avoid arrears $branch.
+    loanFirstAndSecondOverdueRepaymentReminder: Dear $name, your loan is overdue by $overdueamount, for $month please repay your loan$branch.
+    loanThirdAndFourthOverdueRepaymentReminder: Dear $gurantorname,loan for $name  where you are a guarantor is not being serviced.If the loan is not repaid,we will have to recover the balance from your committed shares$branch.
+    messageForDefaultWarningToClient: Dear $name, Your Loan is in default . The Loan Balance of $overdueamount,will be recover from your committed shares $branch.
+    messageForDefaultWarningTogurantor: Dear $gurantorname, loan for $name is in default. Your committed shares to this loan $commitedShare will be deducted from your shares to recover the loan balance $branch.
+    messageForDormancyWarningTogurantor: Dear $name, Your account will be moved to dormancy.Please make a payment to avoid this $branch.

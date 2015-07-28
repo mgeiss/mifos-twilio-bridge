@@ -19,6 +19,7 @@ import org.mifos.module.sms.domain.EventSource;
 import org.mifos.module.sms.domain.SMSBridgeConfig;
 import org.mifos.module.sms.exception.InvalidApiKeyException;
 import org.mifos.module.sms.exception.UnknownEventTypeException;
+import org.mifos.module.sms.listener.BulkSmsListener;
 import org.mifos.module.sms.service.SMSBridgeService;
 import org.mifos.module.sms.service.SecurityService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,7 +38,8 @@ public class MifosSmsController {
 
     @Autowired
     public MifosSmsController(final SecurityService securityService,
-                              final SMSBridgeService smsBridgeService) {
+                              final SMSBridgeService smsBridgeService)
+                               {
         super();
         this.securityService = securityService;
         this.smsBridgeService = smsBridgeService;
@@ -50,22 +52,22 @@ public class MifosSmsController {
                                                  @RequestHeader("X-Mifos-Action") final String action,
                                                  @RequestBody final String payload) {
         this.securityService.verifyApiKey(apiKey, tenantId);
-        this.smsBridgeService.sendShortMessage(entity, action, tenantId, payload);
-
-        return new ResponseEntity<>(HttpStatus.OK);
+        this.smsBridgeService.sendShortMessage(entity, action, tenantId, payload);  
+        
+        return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
 
     @RequestMapping(value = "/sms/configuration", method = RequestMethod.POST, consumes = {"application/json"}, produces = {"application/json"})
     public ResponseEntity<String> createSMSBridgeConfig(@RequestBody final SMSBridgeConfig smsBridgeConfig) {
         if (this.smsBridgeService.findSmsBridgeConfigByTenantId(smsBridgeConfig.getTenantId()) != null) {
-            return new ResponseEntity<>("Tenant " + smsBridgeConfig.getTenantId() + " already exists!", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<String>("Tenant " + smsBridgeConfig.getTenantId() + " already exists!", HttpStatus.BAD_REQUEST);
         }
         final String newApiKey = this.securityService.generateApiKey(smsBridgeConfig.getTenantId(), smsBridgeConfig.getMifosToken(), smsBridgeConfig.getSmsProviderAccountId(), smsBridgeConfig.getSmsProviderToken());
         smsBridgeConfig.setApiKey(newApiKey);
         this.smsBridgeService.createSmsBridgeConfig(smsBridgeConfig);
 
-        return new ResponseEntity<>(newApiKey, HttpStatus.CREATED);
+        return new ResponseEntity<String>(newApiKey, HttpStatus.CREATED);
     }
 
 
@@ -74,7 +76,7 @@ public class MifosSmsController {
                                                               @PathVariable("tenantId") final String tenantId) {
         this.securityService.verifyApiKey(apiKey, tenantId);
         final SMSBridgeConfig smsBridgeConfig = this.smsBridgeService.findSmsBridgeConfigByTenantId(tenantId);
-        return new ResponseEntity<>(smsBridgeConfig, HttpStatus.OK);
+        return new ResponseEntity<SMSBridgeConfig>(smsBridgeConfig, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/sms/configuration/{tenantId}", method = RequestMethod.DELETE, consumes = {"application/json"}, produces = {"application/json"})
@@ -84,10 +86,10 @@ public class MifosSmsController {
         final SMSBridgeConfig smsBridgeConfig = this.smsBridgeService.findSmsBridgeConfigByTenantId(tenantId);
         if (smsBridgeConfig != null) {
             this.smsBridgeService.deleteSmsBridgeConfig(smsBridgeConfig.getId());
-            return new ResponseEntity<>(HttpStatus.OK);
+            return new ResponseEntity<Void>(HttpStatus.OK);
         }
 
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<Void>(HttpStatus.NOT_FOUND);
     }
 
     @RequestMapping(value = "/sms/events/{tenantId}", method = RequestMethod.GET, consumes = {"application/json"}, produces = {"application/json"})
@@ -96,7 +98,7 @@ public class MifosSmsController {
         this.securityService.verifyApiKey(apiKey, tenantId);
         final List<EventSource> eventSources = this.smsBridgeService.findEventsSourcesByTenantId(tenantId);
 
-        return new ResponseEntity<>(eventSources, HttpStatus.OK);
+        return new ResponseEntity<List<EventSource>>(eventSources, HttpStatus.OK);
     }
 
     @RequestMapping(value = "/sms/events/{tenantId}/_resend", method = RequestMethod.POST, consumes = {"application/json"}, produces = {"application/json"})
@@ -105,7 +107,7 @@ public class MifosSmsController {
         this.securityService.verifyApiKey(apiKey, tenantId);
         this.smsBridgeService.resendEventsSourcesByTenantId(tenantId);
 
-        return new ResponseEntity<>(HttpStatus.OK);
+        return new ResponseEntity<Void>(HttpStatus.OK);
     }
 
     @ExceptionHandler

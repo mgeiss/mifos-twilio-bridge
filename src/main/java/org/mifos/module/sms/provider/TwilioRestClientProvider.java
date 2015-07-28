@@ -33,36 +33,41 @@ import java.util.List;
 @Component
 public class TwilioRestClientProvider implements SMSGateway {
 
-    private static final Logger logger = LoggerFactory.getLogger(TwilioRestClientProvider.class);
+	private static final Logger logger = LoggerFactory
+			.getLogger(TwilioRestClientProvider.class);
 
-    TwilioRestClientProvider() {
-        super();
-    }
+	TwilioRestClientProvider() {
+		super();
+	}
 
-    TwilioRestClient get(final SMSBridgeConfig smsBridgeConfig) {
-        final TwilioRestClient client = new TwilioRestClient(smsBridgeConfig.getSmsProviderAccountId(), smsBridgeConfig.getSmsProviderToken());
+	TwilioRestClient get(final SMSBridgeConfig smsBridgeConfig) {
+		final TwilioRestClient client = new TwilioRestClient(
+				smsBridgeConfig.getSmsProviderAccountId(),
+				smsBridgeConfig.getSmsProviderToken());
 
-        return client;
-    }
+		return client;
+	}
 
-    @Override
-    public void sendMessage(final SMSBridgeConfig smsBridgeConfig, final String mobileNo, final String message)
-        throws SMSGatewayException {
-        final List<NameValuePair> messageParams = new ArrayList<NameValuePair>();
-        messageParams.add(new BasicNameValuePair("From", smsBridgeConfig.getPhoneNo()));
-        messageParams.add(new BasicNameValuePair("To", "+" + mobileNo));
-        messageParams.add(new BasicNameValuePair("Body", message));
+	@Override
+	public void sendMessage(final SMSBridgeConfig smsBridgeConfig,
+			final String mobileNo, final String message)
+			throws SMSGatewayException {
+		final List<NameValuePair> messageParams = new ArrayList<NameValuePair>();
+		messageParams.add(new BasicNameValuePair("From", smsBridgeConfig
+				.getPhoneNo()));
+		messageParams.add(new BasicNameValuePair("To", "+" + mobileNo));
+		messageParams.add(new BasicNameValuePair("Body", message));
 
-        final TwilioRestClient twilioRestClient = this.get(smsBridgeConfig);
-        final Account account = twilioRestClient.getAccount();
-        final MessageFactory messageFactory = account.getMessageFactory();
+		final TwilioRestClient twilioRestClient = this.get(smsBridgeConfig);
+		final Account account = twilioRestClient.getAccount();
+		final MessageFactory messageFactory = account.getMessageFactory();
 
-        try {
-            logger.info("Sending SMS to " + mobileNo + " ...");
-            messageFactory.create(messageParams);
-        } catch (TwilioRestException trex) {
-            logger.error("Could not send message, reason:", trex);
-            throw new SMSGatewayException(trex.getMessage());
-        }
-    }
+		try {
+			logger.info("Sending SMS to " + mobileNo + " ...");			
+			messageFactory.create(messageParams);
+		} catch (TwilioRestException trex) {
+			logger.error("Could not send message, reason:", trex);
+			throw new SMSGatewayException(trex.getMessage());
+		}
+	}
 }

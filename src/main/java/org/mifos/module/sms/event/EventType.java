@@ -21,7 +21,11 @@ public enum EventType {
 
     CREATE_CLIENT("client", "create"),
     LOAN_REPAYMENT("loan", "repayment"),
-    SEND_SMS("sms", "send");
+    SEND_SMS("sms", "send"),
+    LOAN_REPAYMENT_SMS_REMINDE("SCHEDULE","EXECUTEJOB"),
+    LOAN_FIRST_AND_SECOND_OVERDUE_REPAYMENT_REMINDER("FIRSTOVERDUE","SECONDOVERDUE"),
+    LOAN_THIRD_AND_FOURTH_OVERDUE_REPAYMENT_REMINDER("THIRDOVERDUE","FOURTHOVERDUE"),
+    BULK_SMS_SEND("SCHEDULER","EXECUTEJOB");
 
     private String entity;
     private String action;
