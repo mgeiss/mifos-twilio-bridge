@@ -1,11 +1,10 @@
 buildscript {
     repositories {
-        maven { url "http://repo.spring.io/libs-release" }
-        mavenLocal()
         mavenCentral()
+        jcenter()
     }
     dependencies {
-        classpath("org.springframework.boot:spring-boot-gradle-plugin:1.1.5.RELEASE")
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:2.6.7")
     }
 }
 
@@ -43,5 +42,5 @@ dependencies {
 }
 
 task wrapper(type: Wrapper) {
-    gradleVersion = '1.11'
+    gradleVersion = '7.5'
 }
